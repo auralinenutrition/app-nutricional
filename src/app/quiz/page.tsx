@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -67,6 +67,9 @@ export default function QuizPage() {
   const [pesoAtual, setPesoAtual] = useState(70)
   const [altura, setAltura] = useState(170)
   const [pesoDesejado, setPesoDesejado] = useState(65)
+  const [diaNascimento, setDiaNascimento] = useState(1)
+  const [mesNascimento, setMesNascimento] = useState('Janeiro')
+  const [anoNascimento, setAnoNascimento] = useState(2000)
 
   const handleMultiSelect = (field: 'rotina_trabalho' | 'dificuldade_principal' | 'alergias', value: string) => {
     setQuizData(prev => {
@@ -88,7 +91,7 @@ export default function QuizPage() {
       case 4: return pesoAtual > 0
       case 5: return altura > 0
       case 6: return pesoDesejado > 0
-      case 7: return quizData.dia_nascimento !== '' && quizData.mes_nascimento !== '' && quizData.ano_nascimento !== ''
+      case 7: return diaNascimento > 0 && mesNascimento !== '' && anoNascimento > 0
       case 8: return quizData.horario_treino !== ''
       case 9: return quizData.alimentacao_atual !== ''
       case 10: return quizData.refeicoes_dia !== ''
@@ -121,6 +124,14 @@ export default function QuizPage() {
     if (step === 6) {
       setQuizData({ ...quizData, peso_desejado: `${pesoDesejado}` })
     }
+    if (step === 7) {
+      setQuizData({ 
+        ...quizData, 
+        dia_nascimento: `${diaNascimento}`,
+        mes_nascimento: mesNascimento,
+        ano_nascimento: `${anoNascimento}`
+      })
+    }
 
     if (step < totalSteps) {
       setStep(step + 1)
@@ -148,8 +159,8 @@ export default function QuizPage() {
   const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
   const anos = Array.from({ length: 100 }, (_, i) => 2024 - i)
 
-  // Componente Picker Vertical
-  const PickerVertical = ({ 
+  // Componente Picker Vertical Melhorado
+  const ScrollWheelPicker = ({ 
     value, 
     onChange, 
     options, 
@@ -158,47 +169,129 @@ export default function QuizPage() {
     value: number | string
     onChange: (val: number | string) => void
     options: (number | string)[]
-    unit: string 
+    unit?: string 
   }) => {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const [isDragging, setIsDragging] = useState(false)
+    const [startY, setStartY] = useState(0)
+    const [scrollTop, setScrollTop] = useState(0)
+
     const selectedIndex = options.indexOf(value)
-    
+    const itemHeight = 56 // altura de cada item
+
+    useEffect(() => {
+      if (containerRef.current) {
+        const scrollPosition = selectedIndex * itemHeight
+        containerRef.current.scrollTop = scrollPosition
+      }
+    }, [selectedIndex, itemHeight])
+
+    const handleScroll = () => {
+      if (containerRef.current && !isDragging) {
+        const scrollTop = containerRef.current.scrollTop
+        const index = Math.round(scrollTop / itemHeight)
+        const clampedIndex = Math.max(0, Math.min(index, options.length - 1))
+        
+        if (options[clampedIndex] !== value) {
+          onChange(options[clampedIndex])
+        }
+
+        // Snap to center
+        setTimeout(() => {
+          if (containerRef.current) {
+            containerRef.current.scrollTop = clampedIndex * itemHeight
+          }
+        }, 100)
+      }
+    }
+
+    const handleMouseDown = (e: React.MouseEvent) => {
+      setIsDragging(true)
+      setStartY(e.pageY - (containerRef.current?.offsetTop || 0))
+      setScrollTop(containerRef.current?.scrollTop || 0)
+    }
+
+    const handleMouseMove = (e: React.MouseEvent) => {
+      if (!isDragging) return
+      e.preventDefault()
+      const y = e.pageY - (containerRef.current?.offsetTop || 0)
+      const walk = (y - startY) * 2
+      if (containerRef.current) {
+        containerRef.current.scrollTop = scrollTop - walk
+      }
+    }
+
+    const handleMouseUp = () => {
+      setIsDragging(false)
+      handleScroll()
+    }
+
     return (
       <div className="flex flex-col items-center">
-        <div className="relative h-48 overflow-hidden">
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            {/* Item selecionado com fundo cinza claro */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-20 h-12 bg-gray-100 rounded-lg border border-gray-200" />
-            
-            <div className="flex flex-col items-center">
-              {options.map((option, index) => {
-                const distance = Math.abs(index - selectedIndex)
-                const opacity = distance === 0 ? 1 : distance === 1 ? 0.5 : 0.3
-                const scale = distance === 0 ? 1 : 0.8
-                const isVisible = distance <= 2
+        <div 
+          ref={containerRef}
+          onScroll={handleScroll}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          className="relative h-[280px] overflow-y-scroll scrollbar-hide cursor-grab active:cursor-grabbing"
+          style={{
+            scrollSnapType: 'y mandatory',
+            WebkitOverflowScrolling: 'touch'
+          }}
+        >
+          {/* Espaçamento superior */}
+          <div style={{ height: `${itemHeight * 2}px` }} />
+          
+          {/* Highlight do item selecionado */}
+          <div 
+            className="absolute left-1/2 transform -translate-x-1/2 w-24 h-14 bg-[#F5F5F5] rounded-xl pointer-events-none"
+            style={{ 
+              top: `${itemHeight * 2}px`,
+              zIndex: 1
+            }}
+          />
+          
+          {/* Items */}
+          {options.map((option, index) => {
+            const distance = Math.abs(index - selectedIndex)
+            const opacity = distance === 0 ? 1 : distance === 1 ? 0.5 : 0.3
                 
-                if (!isVisible) return null
-                
-                return (
-                  <button
-                    key={index}
-                    onClick={() => onChange(option)}
-                    className="h-12 flex items-center justify-center transition-all duration-200"
-                    style={{
-                      opacity,
-                      transform: `scale(${scale})`,
-                      zIndex: distance === 0 ? 10 : 1
-                    }}
-                  >
-                    <span className={`text-2xl ${distance === 0 ? 'font-bold text-black' : 'font-normal text-gray-400'}`}>
-                      {option}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+            return (
+              <div
+                key={index}
+                onClick={() => onChange(option)}
+                className="flex items-center justify-center transition-all duration-200"
+                style={{
+                  height: `${itemHeight}px`,
+                  scrollSnapAlign: 'center',
+                  opacity,
+                  zIndex: distance === 0 ? 10 : 1
+                }}
+              >
+                <span 
+                  className={`transition-all duration-200 ${
+                    distance === 0 
+                      ? 'text-3xl font-semibold text-[#0A0A0A]' 
+                      : 'text-2xl font-normal text-[#A5A5A5]'
+                  }`}
+                >
+                  {option}
+                </span>
+              </div>
+            )
+          })}
+          
+          {/* Espaçamento inferior */}
+          <div style={{ height: `${itemHeight * 2}px` }} />
         </div>
-        <span className="text-sm text-gray-500 mt-2">{unit}</span>
+        
+        {unit && (
+          <span className="text-sm text-[#6F6F6F] mt-3 font-medium">
+            {unit}
+          </span>
+        )}
       </div>
     )
   }
@@ -288,27 +381,26 @@ export default function QuizPage() {
 
       case 4:
         return (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 text-left">
+              <h2 className="text-2xl font-bold text-[#0A0A0A] text-left">
                 Qual é o seu peso atual?
               </h2>
-              <p className="text-sm text-gray-500 mt-2 text-left">
+              <p className="text-sm text-[#6F6F6F] mt-2 text-left">
                 Ajuste usando o seletor abaixo
               </p>
             </div>
             
-            <div className="flex justify-center items-center py-8">
-              <PickerVertical
+            <div className="flex justify-center items-center py-4">
+              <ScrollWheelPicker
                 value={pesoAtual}
                 onChange={(val) => setPesoAtual(val as number)}
                 options={gerarArrayPeso()}
-                unit="kg"
               />
             </div>
 
-            <div className="text-center">
-              <p className="text-4xl font-bold text-gray-900">
+            <div className="text-center pb-4">
+              <p className="text-4xl font-semibold text-[#0A0A0A]">
                 {pesoAtual} kg
               </p>
             </div>
@@ -317,27 +409,26 @@ export default function QuizPage() {
 
       case 5:
         return (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 text-left">
+              <h2 className="text-2xl font-bold text-[#0A0A0A] text-left">
                 Qual é a sua altura?
               </h2>
-              <p className="text-sm text-gray-500 mt-2 text-left">
+              <p className="text-sm text-[#6F6F6F] mt-2 text-left">
                 Ajuste usando o seletor abaixo
               </p>
             </div>
             
-            <div className="flex justify-center items-center py-8">
-              <PickerVertical
+            <div className="flex justify-center items-center py-4">
+              <ScrollWheelPicker
                 value={altura}
                 onChange={(val) => setAltura(val as number)}
                 options={gerarArrayAltura()}
-                unit="cm"
               />
             </div>
 
-            <div className="text-center">
-              <p className="text-4xl font-bold text-gray-900">
+            <div className="text-center pb-4">
+              <p className="text-4xl font-semibold text-[#0A0A0A]">
                 {altura} cm
               </p>
             </div>
@@ -346,32 +437,31 @@ export default function QuizPage() {
 
       case 6:
         return (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 text-left">
+              <h2 className="text-2xl font-bold text-[#0A0A0A] text-left">
                 Qual peso você deseja atingir?
               </h2>
-              <p className="text-sm text-gray-500 mt-2 text-left">
+              <p className="text-sm text-[#6F6F6F] mt-2 text-left">
                 Ajuste usando o seletor abaixo
               </p>
             </div>
             
-            <div className="flex justify-center items-center py-8">
-              <PickerVertical
+            <div className="flex justify-center items-center py-4">
+              <ScrollWheelPicker
                 value={pesoDesejado}
                 onChange={(val) => setPesoDesejado(val as number)}
                 options={gerarArrayPeso()}
-                unit="kg"
               />
             </div>
 
-            <div className="text-center">
-              <p className="text-4xl font-bold text-gray-900">
+            <div className="text-center pb-4">
+              <p className="text-4xl font-semibold text-[#0A0A0A]">
                 {pesoDesejado} kg
               </p>
               {pesoAtual > 0 && (
-                <p className="text-sm text-red-500 mt-2">
-                  {pesoDesejado < pesoAtual ? '-' : '+'}{Math.abs(pesoDesejado - pesoAtual)} kg
+                <p className="text-lg text-[#E54545] mt-2 font-medium">
+                  {pesoDesejado < pesoAtual ? '' : '+'}{pesoDesejado - pesoAtual} kg
                 </p>
               )}
             </div>
@@ -380,34 +470,34 @@ export default function QuizPage() {
 
       case 7:
         return (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <div>
-              <h2 className="text-2xl font-bold text-gray-900 text-left">
+              <h2 className="text-2xl font-bold text-[#0A0A0A] text-left">
                 Quando você nasceu?
               </h2>
-              <p className="text-sm text-gray-500 mt-2 text-left">
+              <p className="text-sm text-[#6F6F6F] mt-2 text-left">
                 Selecione sua data de nascimento
               </p>
             </div>
             
-            <div className="flex justify-center items-center gap-3 py-8">
-              <PickerVertical
-                value={quizData.dia_nascimento || 1}
-                onChange={(val) => setQuizData({ ...quizData, dia_nascimento: String(val) })}
+            <div className="flex justify-center items-center gap-4 py-4">
+              <ScrollWheelPicker
+                value={diaNascimento}
+                onChange={(val) => setDiaNascimento(val as number)}
                 options={dias}
                 unit="Dia"
               />
               
-              <PickerVertical
-                value={quizData.mes_nascimento || 'Janeiro'}
-                onChange={(val) => setQuizData({ ...quizData, mes_nascimento: String(val) })}
+              <ScrollWheelPicker
+                value={mesNascimento}
+                onChange={(val) => setMesNascimento(val as string)}
                 options={meses}
                 unit="Mês"
               />
               
-              <PickerVertical
-                value={quizData.ano_nascimento || 2000}
-                onChange={(val) => setQuizData({ ...quizData, ano_nascimento: String(val) })}
+              <ScrollWheelPicker
+                value={anoNascimento}
+                onChange={(val) => setAnoNascimento(val as number)}
                 options={anos}
                 unit="Ano"
               />
@@ -832,13 +922,24 @@ export default function QuizPage() {
             className={`w-full h-14 text-lg rounded-full transition-all ${
               canProceed()
                 ? 'bg-[#00C974] hover:bg-[#00B368] text-white'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-[#E1E1E1] text-[#9A9A9A] cursor-not-allowed'
             }`}
           >
             {step === totalSteps ? 'Finalizar' : 'Continuar'}
           </Button>
         </div>
       </div>
+      
+      {/* CSS para esconder scrollbar */}
+      <style jsx global>{`
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
+        }
+      `}</style>
     </div>
   )
 }
