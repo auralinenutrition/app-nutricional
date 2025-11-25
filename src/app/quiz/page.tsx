@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -159,7 +159,7 @@ export default function QuizPage() {
   const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
   const anos = Array.from({ length: 100 }, (_, i) => 2024 - i)
 
-  // Componente Picker Vertical Melhorado
+  // Componente Picker Vertical ULTRA SIMPLIFICADO - SEM useEffect
   const ScrollWheelPicker = ({ 
     value, 
     onChange, 
@@ -168,28 +168,27 @@ export default function QuizPage() {
   }: { 
     value: number | string
     onChange: (val: number | string) => void
-    options: (number | string)[]
+    options: (number | string)[])
     unit?: string 
   }) => {
     const containerRef = useRef<HTMLDivElement>(null)
-    const [isDragging, setIsDragging] = useState(false)
-    const [startY, setStartY] = useState(0)
-    const [scrollTop, setScrollTop] = useState(0)
+    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
 
     const selectedIndex = options.indexOf(value)
-    const itemHeight = 56 // altura de cada item
-
-    useEffect(() => {
-      if (containerRef.current) {
-        const scrollPosition = selectedIndex * itemHeight
-        containerRef.current.scrollTop = scrollPosition
-      }
-    }, [selectedIndex, itemHeight])
+    const itemHeight = 56
 
     const handleScroll = () => {
-      if (containerRef.current && !isDragging) {
-        const scrollTop = containerRef.current.scrollTop
-        const index = Math.round(scrollTop / itemHeight)
+      if (!containerRef.current) return
+      
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current)
+      }
+
+      scrollTimeoutRef.current = setTimeout(() => {
+        if (!containerRef.current) return
+        
+        const currentScrollTop = containerRef.current.scrollTop
+        const index = Math.round(currentScrollTop / itemHeight)
         const clampedIndex = Math.max(0, Math.min(index, options.length - 1))
         
         if (options[clampedIndex] !== value) {
@@ -197,33 +196,8 @@ export default function QuizPage() {
         }
 
         // Snap to center
-        setTimeout(() => {
-          if (containerRef.current) {
-            containerRef.current.scrollTop = clampedIndex * itemHeight
-          }
-        }, 100)
-      }
-    }
-
-    const handleMouseDown = (e: React.MouseEvent) => {
-      setIsDragging(true)
-      setStartY(e.pageY - (containerRef.current?.offsetTop || 0))
-      setScrollTop(containerRef.current?.scrollTop || 0)
-    }
-
-    const handleMouseMove = (e: React.MouseEvent) => {
-      if (!isDragging) return
-      e.preventDefault()
-      const y = e.pageY - (containerRef.current?.offsetTop || 0)
-      const walk = (y - startY) * 2
-      if (containerRef.current) {
-        containerRef.current.scrollTop = scrollTop - walk
-      }
-    }
-
-    const handleMouseUp = () => {
-      setIsDragging(false)
-      handleScroll()
+        containerRef.current.scrollTop = clampedIndex * itemHeight
+      }, 150)
     }
 
     return (
@@ -231,11 +205,7 @@ export default function QuizPage() {
         <div 
           ref={containerRef}
           onScroll={handleScroll}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          className="relative h-[280px] overflow-y-scroll scrollbar-hide cursor-grab active:cursor-grabbing"
+          className="relative h-[280px] overflow-y-scroll scrollbar-hide"
           style={{
             scrollSnapType: 'y mandatory',
             WebkitOverflowScrolling: 'touch'
@@ -260,9 +230,14 @@ export default function QuizPage() {
                 
             return (
               <div
-                key={index}
-                onClick={() => onChange(option)}
-                className="flex items-center justify-center transition-all duration-200"
+                key={`picker-${option}-${index}`}
+                onClick={() => {
+                  onChange(option)
+                  if (containerRef.current) {
+                    containerRef.current.scrollTop = index * itemHeight
+                  }
+                }}
+                className="flex items-center justify-center transition-opacity duration-200"
                 style={{
                   height: `${itemHeight}px`,
                   scrollSnapAlign: 'center',
