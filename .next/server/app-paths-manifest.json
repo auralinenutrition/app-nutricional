@@ -1,0 +1,12 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/home/page": "app/home/page.js",
+  "/icon.svg/route": "app/icon.svg/route.js",
+  "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
+  "/planos/page": "app/planos/page.js",
+  "/quiz-result/page": "app/quiz-result/page.js",
+  "/quiz/page": "app/quiz/page.js",
+  "/signup/page": "app/signup/page.js",
+  "/weekly-plan/page": "app/weekly-plan/page.js"
+}

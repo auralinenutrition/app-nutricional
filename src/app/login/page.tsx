@@ -1,105 +1,93 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { useAuth } from '@/contexts/AuthContext'
-import { ChevronLeft } from 'lucide-react'
+import { useState } from "react";
+import AInput from "@/components/ui/AInput";
+import AButton from "@/components/ui/AButton";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/lib/supabase";
 
-export default function LoginPage() {
-  const router = useRouter()
-  const { signIn } = useAuth()
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
+export default function Login() {
+  const { user, signIn } = useAuth();
+  const router = useRouter();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [loading, setLoading] = useState(false);
 
+  const handleLogin = async () => {
     try {
-      await signIn(email, password)
-      router.push('/dashboard')
-    } catch (err) {
-      setError('Email ou senha incorretos')
+      setLoading(true);
+
+      // 1) autenticar
+      await signIn(email, senha);
+
+      // 2) recuperar usuário logado
+      const { data: sessionData } = await supabase.auth.getSession();
+      const userId = sessionData.session?.user?.id;
+
+      if (!userId) {
+        throw new Error("Não foi possível identificar o usuário logado.");
+      }
+
+      // 3) atualizar last_login
+      await supabase
+        .from("users")
+        .update({
+          last_login: new Date().toISOString(),
+        })
+        .eq("id", userId);
+
+      // 4) redirecionar
+      router.push("/home");
+    } catch (err: any) {
+      alert(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-md mx-auto px-6 py-8">
-        <Button
-          onClick={() => router.push('/')}
-          variant="ghost"
-          className="mb-8 p-2"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </Button>
+    <div className="min-h-screen w-full flex items-center justify-center p-6">
+      <div className="w-full max-w-sm flex flex-col gap-6">
+        <h1 className="text-3xl font-bold text-[#0A0A0A]">
+          Bem-vindo de volta
+        </h1>
 
-        <div className="space-y-8">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">
-              Bem-vindo de volta
-            </h1>
-            <p className="text-gray-600 mt-2">
-              Entre para continuar sua jornada
-            </p>
-          </div>
+        <div className="flex flex-col gap-4">
+          <AInput
+            label="Email"
+            type="email"
+            value={email}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setEmail(e.target.value)
+            }
+          />
 
-          <form onSubmit={handleLogin} className="space-y-6">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                E-mail
-              </label>
-              <Input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="seu@email.com"
-                className="h-12 border-2"
-                required
-              />
-            </div>
+          <AInput
+            label="Senha"
+            type="password"
+            value={senha}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setSenha(e.target.value)
+            }
+          />
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Senha
-              </label>
-              <Input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="h-12 border-2"
-                required
-              />
-            </div>
+          <AButton type="button" onClick={handleLogin}>
+            {loading ? "Entrando..." : "Entrar"}
+          </AButton>
 
-            {error && (
-              <p className="text-red-500 text-sm">{error}</p>
-            )}
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full h-14 text-lg bg-[#00C974] hover:bg-[#00B368] text-white rounded-full"
-            >
-              {loading ? 'Entrando...' : 'Entrar'}
-            </Button>
-          </form>
-
-          <div className="text-center">
-            <button className="text-[#00C974] hover:underline">
-              Esqueci minha senha
-            </button>
-          </div>
+          <p className="text-center text-sm mt-4 text-[#6F6F6F]">
+            Ainda não tem conta?
+          </p>
+          <p
+            onClick={() => router.push("/quiz")}
+            className="text-center text-sm font-semibold text-[#00C974] cursor-pointer"
+          >
+            Complete o quiz para começar
+          </p>
         </div>
       </div>
     </div>
-  )
+  );
 }

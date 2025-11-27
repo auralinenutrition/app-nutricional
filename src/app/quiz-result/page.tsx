@@ -1,81 +1,130 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import WeightProgressChart from "@/components/motivation/WeightProgressChart";
 
 export default function QuizResultPage() {
-  const router = useRouter()
-  const [quizData, setQuizData] = useState<any>(null)
+  const router = useRouter();
+  const [quizData, setQuizData] = useState<any>(null);
 
+  // Carrega dados do quiz
   useEffect(() => {
-    const data = localStorage.getItem('quizData')
-    if (data) {
-      setQuizData(JSON.parse(data))
+    const saved = localStorage.getItem("quizData");
+    if (saved) {
+      setQuizData(JSON.parse(saved));
     }
-  }, [])
+  }, []);
 
-  if (!quizData) {
-    return <div className="min-h-screen bg-white flex items-center justify-center">
-      <p>Carregando...</p>
-    </div>
-  }
+  if (!quizData)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        Carregando...
+      </div>
+    );
+
+  // Cálculos motivacionais
+  const pesoAtual = Number(quizData.peso_atual);
+  const pesoDesejado = Number(quizData.peso_desejado);
+  const diferenca = pesoDesejado - pesoAtual;
+
+  const tendencia = diferenca < 0 ? "perder" : "ganhar";
+  const valorAbs = Math.abs(diferenca);
 
   return (
-    <div className="min-h-screen bg-white">
-      <div className="max-w-2xl mx-auto px-6 py-12">
-        <div className="text-center space-y-6">
-          <div className="w-20 h-20 bg-[#00C974] rounded-full mx-auto flex items-center justify-center">
-            <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
+    <div className="min-h-screen bg-white px-6 py-10 max-w-2xl mx-auto">
+      {/* HEADER */}
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold text-[#0A0A0A]">
+          Seu plano está pronto! 💪
+        </h1>
+
+        <p className="text-[#6F6F6F] text-lg">
+          Criamos um plano 100% personalizado com base nas suas respostas.
+        </p>
+      </div>
+
+      {/* BLOCO DO PESO */}
+      <div className="mt-10 bg-[#F8F8F8] p-6 rounded-2xl shadow-sm">
+        <h2 className="text-xl font-semibold text-[#0A0A0A] mb-4">
+          Evolução projetada
+        </h2>
+
+        <div className="flex justify-around items-center py-4">
+          <div className="text-center">
+            <p className="text-sm text-[#6F6F6F]">Peso atual</p>
+            <p className="text-3xl font-bold text-[#0A0A0A]">{pesoAtual}kg</p>
           </div>
 
-          <h1 className="text-3xl font-bold text-gray-900">
-            Seu plano inicial está pronto!
-          </h1>
-          
-          <p className="text-gray-600">
-            Com base nas suas respostas, montamos recomendações ideais para você.
-          </p>
+          <div className="text-5xl">→</div>
 
-          <div className="bg-gray-50 rounded-2xl p-6 space-y-4 text-left">
-            <div>
-              <h3 className="font-semibold text-gray-900">Objetivo</h3>
-              <p className="text-gray-600">{quizData.objetivo}</p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-gray-900">Refeições recomendadas</h3>
-              <p className="text-gray-600">{quizData.refeicoes_dia} refeições por dia</p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-gray-900">Nível de treino</h3>
-              <p className="text-gray-600">{quizData.nivel_treino}</p>
-            </div>
-
-            <div>
-              <h3 className="font-semibold text-gray-900">Frequência semanal</h3>
-              <p className="text-gray-600">{quizData.frequencia_treino}</p>
-            </div>
-
-            {quizData.dificuldade_principal.length > 0 && (
-              <div>
-                <h3 className="font-semibold text-gray-900">Principais desafios</h3>
-                <p className="text-gray-600">{quizData.dificuldade_principal.join(', ')}</p>
-              </div>
-            )}
+          <div className="text-center">
+            <p className="text-sm text-[#6F6F6F]">Peso ideal</p>
+            <p className="text-3xl font-bold text-[#00C974]">
+              {pesoDesejado}kg
+            </p>
           </div>
-
-          <Button
-            onClick={() => router.push('/register')}
-            className="w-full h-14 text-lg bg-[#00C974] hover:bg-[#00B368] text-white rounded-full"
-          >
-            Criar minha conta para continuar
-          </Button>
         </div>
+
+        <p className="text-center text-[#6F6F6F] text-sm mt-2">
+          Você precisa {tendencia}{" "}
+          <span className="font-semibold text-[#0A0A0A]">{valorAbs}kg</span>
+          {diferenca === 0 && " — você já está no seu peso ideal!"}
+        </p>
+      </div>
+
+      {/* GRÁFICO REAL */}
+      <div
+        className="w-full rounded-2xl p-6 mt-10"
+      >
+        <h2 className="text-center text-lg font-semibold mb-4 text-[#0A0A0A]">
+          Seu progresso nas próximas semanas
+        </h2>
+
+        <WeightProgressChart objetivo={quizData.objetivo} />
+
+        <p className="text-center text-sm text-[#3D3D3D] mt-4">
+          Projeção baseada em milhares de usuários reais
+        </p>
+      </div>
+
+      {/* MENSAGEM MOTIVACIONAL */}
+      <div className="mt-10 text-center space-y-4">
+        <h2 className="text-2xl font-bold text-[#0A0A0A]">
+          Seu objetivo é totalmente possível 🎯
+        </h2>
+
+        <p className="text-[#6F6F6F] leading-relaxed">
+          Com consistência e o plano certo, você chega lá muito mais rápido do
+          que imagina. Criamos recomendações feitas sob medida para sua rotina.
+        </p>
+
+        <ul className="text-left space-y-2 text-[#0A0A0A] font-medium mt-4 max-w-md mx-auto">
+          <li>✔️ Plano alimentar personalizado</li>
+          <li>✔️ Quantidade ideal de refeições por dia</li>
+          <li>✔️ Adequado ao seu nível de disciplina</li>
+          <li>✔️ Ajustado ao seu horário mais difícil</li>
+          <li>✔️ Baseado em como você realmente vive</li>
+        </ul>
+      </div>
+
+      {/* CTA */}
+      <div className="mt-12 text-center space-y-4">
+        <Button
+          onClick={() => router.push("/planos")}
+          className="w-full h-14 rounded-full bg-[#00C974] hover:bg-[#00B368] text-white text-lg"
+        >
+          Quero acessar meu plano agora
+        </Button>
+
+        <button
+          onClick={() => router.push("/")}
+          className="text-[#6F6F6F] underline text-sm"
+        >
+          Refazer quiz
+        </button>
       </div>
     </div>
-  )
+  );
 }

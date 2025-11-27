@@ -1,888 +1,880 @@
-'use client'
+"use client";
 
-import { useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { ChevronLeft, Check } from 'lucide-react'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { ChevronLeft } from "lucide-react";
 
+import ScrollWheelPicker from "@/components/scrollWhellPicker/ScrollWhellPicker";
+import ScrollWheelPickerDate from "@/components/scrollWhellPicker/ScrollWheelDatePicker";
+import MotivationalModal from "@/components/motivation/MotivationModel";
+
+import { useAuth } from "@/contexts/AuthContext";
+import quizService from "@/services/quizService";
+
+// ======================================
+// TIPAGEM DO QUIZ
+// ======================================
 type QuizData = {
-  objetivo: string
-  nivel_treino: string
-  frequencia_treino: string
-  peso_atual: string
-  altura: string
-  peso_desejado: string
-  dia_nascimento: string
-  mes_nascimento: string
-  ano_nascimento: string
-  horario_treino: string
-  alimentacao_atual: string
-  refeicoes_dia: string
-  rotina_trabalho: string[]
-  nivel_disciplina: string
-  dificuldade_principal: string[]
-  horario_dificil: string
-  agua: string
-  sono: string
-  tentou_dieta: string
-  expectativa: string
-  prazo_resultado: string
-  alergias: string[]
-  outras_alergias: string
-}
+  objetivo: string;
+  nivel_treino: string;
+  frequencia_treino: string;
+  peso_atual: string;
+  altura: string;
+  peso_desejado: string;
+  dia_nascimento: string;
+  mes_nascimento: string;
+  ano_nascimento: string;
+  horario_treino: string;
+  alimentacao_atual: string;
+  refeicoes_dia: string;
+  rotina_trabalho: string[];
+  nivel_disciplina: string;
+  dificuldade_principal: string[];
+  horario_dificil: string;
+  agua: string;
+  sono: string;
+  tentou_dieta: string;
+  expectativa: string;
+  prazo_resultado: string;
+  alergias: string[];
+  outras_alergias: string;
+};
 
 export default function QuizPage() {
-  const router = useRouter()
-  const [step, setStep] = useState(1)
-  const totalSteps = 22
-  
+  const router = useRouter();
+  const { user } = useAuth();
+  const totalSteps = 22;
+
+  const [step, setStep] = useState(1);
+
   const [quizData, setQuizData] = useState<QuizData>({
-    objetivo: '',
-    nivel_treino: '',
-    frequencia_treino: '',
-    peso_atual: '',
-    altura: '',
-    peso_desejado: '',
-    dia_nascimento: '',
-    mes_nascimento: '',
-    ano_nascimento: '',
-    horario_treino: '',
-    alimentacao_atual: '',
-    refeicoes_dia: '',
+    objetivo: "",
+    nivel_treino: "",
+    frequencia_treino: "",
+    peso_atual: "",
+    altura: "",
+    peso_desejado: "",
+    dia_nascimento: "",
+    mes_nascimento: "",
+    ano_nascimento: "",
+    horario_treino: "",
+    alimentacao_atual: "",
+    refeicoes_dia: "",
     rotina_trabalho: [],
-    nivel_disciplina: '',
+    nivel_disciplina: "",
     dificuldade_principal: [],
-    horario_dificil: '',
-    agua: '',
-    sono: '',
-    tentou_dieta: '',
-    expectativa: '',
-    prazo_resultado: '',
+    horario_dificil: "",
+    agua: "",
+    sono: "",
+    tentou_dieta: "",
+    expectativa: "",
+    prazo_resultado: "",
     alergias: [],
-    outras_alergias: ''
-  })
+    outras_alergias: "",
+  });
 
-  // Estado para os pickers
-  const [pesoAtual, setPesoAtual] = useState(70)
-  const [altura, setAltura] = useState(170)
-  const [pesoDesejado, setPesoDesejado] = useState(65)
-  const [diaNascimento, setDiaNascimento] = useState(1)
-  const [mesNascimento, setMesNascimento] = useState('Janeiro')
-  const [anoNascimento, setAnoNascimento] = useState(2000)
+  const [pesoAtual, setPesoAtual] = useState(70);
+  const [altura, setAltura] = useState(170);
+  const [pesoDesejado, setPesoDesejado] = useState(65);
 
-  const handleMultiSelect = (field: 'rotina_trabalho' | 'dificuldade_principal' | 'alergias', value: string) => {
-    setQuizData(prev => {
-      const current = prev[field]
-      if (current.includes(value)) {
-        return { ...prev, [field]: current.filter(item => item !== value) }
-      } else {
-        return { ...prev, [field]: [...current, value] }
-      }
-    })
-  }
+  const [dia, setDia] = useState(1);
+  const [mes, setMes] = useState("Janeiro");
+  const [ano, setAno] = useState(2000);
 
-  // Validação para permitir avançar
-  const canProceed = () => {
-    switch (step) {
-      case 1: return quizData.objetivo !== ''
-      case 2: return quizData.nivel_treino !== ''
-      case 3: return quizData.frequencia_treino !== ''
-      case 4: return pesoAtual > 0
-      case 5: return altura > 0
-      case 6: return pesoDesejado > 0
-      case 7: return diaNascimento > 0 && mesNascimento !== '' && anoNascimento > 0
-      case 8: return quizData.horario_treino !== ''
-      case 9: return quizData.alimentacao_atual !== ''
-      case 10: return quizData.refeicoes_dia !== ''
-      case 11: return quizData.rotina_trabalho.length > 0
-      case 12: return quizData.nivel_disciplina !== ''
-      case 13: return quizData.dificuldade_principal.length > 0
-      case 14: return quizData.horario_dificil !== ''
-      case 15: return quizData.agua !== ''
-      case 16: return quizData.sono !== ''
-      case 17: return quizData.tentou_dieta !== ''
-      case 18: return quizData.expectativa !== ''
-      case 19: return quizData.prazo_resultado !== ''
-      case 20: return true // Alergias é opcional
-      default: return true
-    }
-  }
+  const gerarArrayPeso = () => Array.from({ length: 171 }, (_, i) => 30 + i);
+  const gerarArrayAltura = () => Array.from({ length: 121 }, (_, i) => 100 + i);
+
+  const dias = Array.from({ length: 31 }, (_, i) => i + 1);
+  const meses = [
+    "Janeiro",
+    "Fevereiro",
+    "Março",
+    "Abril",
+    "Maio",
+    "Junho",
+    "Julho",
+    "Agosto",
+    "Setembro",
+    "Outubro",
+    "Novembro",
+    "Dezembro",
+  ];
+  const anos = Array.from({ length: 100 }, (_, i) => 2024 - i);
+
+  const [showMetaModal, setShowMetaModal] = useState(false);
+  const [showProgressModal, setShowProgressModal] = useState(false);
+  const [showAlmostThereModal, setShowAlmostThereModal] = useState(false);
 
   const handleNext = () => {
-    if (!canProceed()) {
-      return // Não permite avançar se não respondeu
+    if (step === 4) setQuizData({ ...quizData, peso_atual: `${pesoAtual}` });
+    if (step === 5) setQuizData({ ...quizData, altura: `${altura}` });
+
+    if (step === 6) {
+      setQuizData({ ...quizData, peso_desejado: `${pesoDesejado}` });
+      setShowMetaModal(true);
+      return;
     }
 
-    // Salvar valores dos pickers antes de avançar
-    if (step === 4) {
-      setQuizData({ ...quizData, peso_atual: `${pesoAtual}` })
-    }
-    if (step === 5) {
-      setQuizData({ ...quizData, altura: `${altura}` })
-    }
-    if (step === 6) {
-      setQuizData({ ...quizData, peso_desejado: `${pesoDesejado}` })
-    }
     if (step === 7) {
-      setQuizData({ 
-        ...quizData, 
-        dia_nascimento: `${diaNascimento}`,
-        mes_nascimento: mesNascimento,
-        ano_nascimento: `${anoNascimento}`
-      })
+      setQuizData({
+        ...quizData,
+        dia_nascimento: `${dia}`,
+        mes_nascimento: mes,
+        ano_nascimento: `${ano}`,
+      });
+    }
+
+    if (step === 11) {
+      setShowProgressModal(true);
+      return;
+    }
+
+    if (step === totalSteps - 1) {
+      setShowAlmostThereModal(true);
+      return;
     }
 
     if (step < totalSteps) {
-      setStep(step + 1)
-    } else {
-      localStorage.setItem('quizData', JSON.stringify(quizData))
-      router.push('/quiz-result')
+      setStep(step + 1);
+      return;
     }
-  }
+
+    localStorage.setItem("quiz_completed", "true");
+    localStorage.setItem("quizData", JSON.stringify(quizData));
+    router.push("/quiz-result");
+  };
 
   const handleBack = () => {
-    if (step > 1) {
-      setStep(step - 1)
-    } else {
-      router.push('/')
-    }
-  }
+    if (step > 1) setStep(step - 1);
+    else router.push("/");
+  };
 
-  const progress = (step / totalSteps) * 100
-
-  // Gerar arrays para os pickers
-  const gerarArrayPeso = () => Array.from({ length: 171 }, (_, i) => 30 + i) // 30 a 200 kg
-  const gerarArrayAltura = () => Array.from({ length: 121 }, (_, i) => 100 + i) // 100 a 220 cm
-
-  const dias = Array.from({ length: 31 }, (_, i) => i + 1)
-  const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro']
-  const anos = Array.from({ length: 100 }, (_, i) => 2024 - i)
-
-  // Componente Picker Vertical ULTRA SIMPLIFICADO - SEM useEffect
-  const ScrollWheelPicker = ({ 
-    value, 
-    onChange, 
-    options, 
-    unit 
-  }: { 
-    value: number | string
-    onChange: (val: number | string) => void
-    options: (number | string)[])
-    unit?: string 
-  }) => {
-    const containerRef = useRef<HTMLDivElement>(null)
-    const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-    const selectedIndex = options.indexOf(value)
-    const itemHeight = 56
-
-    const handleScroll = () => {
-      if (!containerRef.current) return
-      
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current)
-      }
-
-      scrollTimeoutRef.current = setTimeout(() => {
-        if (!containerRef.current) return
-        
-        const currentScrollTop = containerRef.current.scrollTop
-        const index = Math.round(currentScrollTop / itemHeight)
-        const clampedIndex = Math.max(0, Math.min(index, options.length - 1))
-        
-        if (options[clampedIndex] !== value) {
-          onChange(options[clampedIndex])
-        }
-
-        // Snap to center
-        containerRef.current.scrollTop = clampedIndex * itemHeight
-      }, 150)
-    }
-
-    return (
-      <div className="flex flex-col items-center">
-        <div 
-          ref={containerRef}
-          onScroll={handleScroll}
-          className="relative h-[280px] overflow-y-scroll scrollbar-hide"
-          style={{
-            scrollSnapType: 'y mandatory',
-            WebkitOverflowScrolling: 'touch'
-          }}
-        >
-          {/* Espaçamento superior */}
-          <div style={{ height: `${itemHeight * 2}px` }} />
-          
-          {/* Highlight do item selecionado */}
-          <div 
-            className="absolute left-1/2 transform -translate-x-1/2 w-24 h-14 bg-[#F5F5F5] rounded-xl pointer-events-none"
-            style={{ 
-              top: `${itemHeight * 2}px`,
-              zIndex: 1
-            }}
-          />
-          
-          {/* Items */}
-          {options.map((option, index) => {
-            const distance = Math.abs(index - selectedIndex)
-            const opacity = distance === 0 ? 1 : distance === 1 ? 0.5 : 0.3
-                
-            return (
-              <div
-                key={`picker-${option}-${index}`}
-                onClick={() => {
-                  onChange(option)
-                  if (containerRef.current) {
-                    containerRef.current.scrollTop = index * itemHeight
-                  }
-                }}
-                className="flex items-center justify-center transition-opacity duration-200"
-                style={{
-                  height: `${itemHeight}px`,
-                  scrollSnapAlign: 'center',
-                  opacity,
-                  zIndex: distance === 0 ? 10 : 1
-                }}
-              >
-                <span 
-                  className={`transition-all duration-200 ${
-                    distance === 0 
-                      ? 'text-3xl font-semibold text-[#0A0A0A]' 
-                      : 'text-2xl font-normal text-[#A5A5A5]'
-                  }`}
-                >
-                  {option}
-                </span>
-              </div>
-            )
-          })}
-          
-          {/* Espaçamento inferior */}
-          <div style={{ height: `${itemHeight * 2}px` }} />
-        </div>
-        
-        {unit && (
-          <span className="text-sm text-[#6F6F6F] mt-3 font-medium">
-            {unit}
-          </span>
-        )}
-      </div>
-    )
-  }
+  const progress = (step / totalSteps) * 100;
 
   const renderQuestion = () => {
     switch (step) {
+      // ------------------------
+      // STEP 1 — OBJETIVO
+      // ------------------------
       case 1:
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold text-[#0A0A0A]">
               Qual é seu objetivo principal?
             </h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
             <div className="space-y-3">
-              {['Emagrecer', 'Ganhar massa muscular', 'Manter peso', 'Melhorar hábitos', 'Ter mais energia'].map(option => (
+              {[
+                "Perder peso",
+                "Ganhar massa muscular",
+                "Manter peso",
+                "Melhorar hábitos",
+              ].map((opt) => (
                 <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, objetivo: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.objetivo === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
+                  key={opt}
+                  onClick={() => setQuizData({ ...quizData, objetivo: opt })}
+                  className={`w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${
+                    quizData.objetivo === opt
+                      ? "border-[#00C974] bg-white"
+                      : "border-gray-200 bg-white"
                   }`}
                 >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.objetivo === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
+                  <span>{opt}</span>
                 </button>
               ))}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 2 — NÍVEL DE TREINO
+      // ------------------------
       case 2:
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
-              Qual é o seu nível de treino atual?
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">
+              Qual é o seu nível de treino?
             </h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
             <div className="space-y-3">
-              {['Iniciante', 'Intermediário', 'Avançado'].map(option => (
+              {["Iniciante", "Intermediário", "Avançado"].map((opt) => (
                 <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, nivel_treino: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.nivel_treino === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
+                  key={opt}
+                  onClick={() =>
+                    setQuizData({ ...quizData, nivel_treino: opt })
+                  }
+                  className={`w-full h-14 px-6 rounded-xl border-2 ${
+                    quizData.nivel_treino === opt
+                      ? "border-[#00C974]"
+                      : "border-gray-200"
                   }`}
                 >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.nivel_treino === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
+                  {opt}
                 </button>
               ))}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 3 — FREQUÊNCIA DE TREINO
+      // ------------------------
       case 3:
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
-              Quantas vezes você treina na semana?
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">
+              Quantas vezes você treina por semana?
             </h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
             <div className="space-y-3">
-              {['Não treino', '1–2x por semana', '3–4x por semana', '5–6x por semana', 'Todos os dias'].map(option => (
+              {[
+                "Não treino",
+                "1–2x por semana",
+                "3–4x por semana",
+                "5–6x por semana",
+                "Todos os dias",
+              ].map((opt) => (
                 <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, frequencia_treino: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.frequencia_treino === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
+                  key={opt}
+                  onClick={() =>
+                    setQuizData({ ...quizData, frequencia_treino: opt })
+                  }
+                  className={`w-full h-14 px-6 rounded-xl border-2 ${
+                    quizData.frequencia_treino === opt
+                      ? "border-[#00C974]"
+                      : "border-gray-200"
                   }`}
                 >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.frequencia_treino === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
+                  {opt}
                 </button>
               ))}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 4 — PESO ATUAL
+      // ------------------------
       case 4:
         return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold text-[#0A0A0A] text-left">
-                Qual é o seu peso atual?
-              </h2>
-              <p className="text-sm text-[#6F6F6F] mt-2 text-left">
-                Ajuste usando o seletor abaixo
-              </p>
-            </div>
-            
-            <div className="flex justify-center items-center py-4">
-              <ScrollWheelPicker
-                value={pesoAtual}
-                onChange={(val) => setPesoAtual(val as number)}
-                options={gerarArrayPeso()}
-              />
-            </div>
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">Qual é o seu peso atual?</h2>
+            <p className="text-[#6F6F6F]">Ajuste usando o seletor abaixo</p>
 
-            <div className="text-center pb-4">
-              <p className="text-4xl font-semibold text-[#0A0A0A]">
-                {pesoAtual} kg
-              </p>
-            </div>
+            <ScrollWheelPicker
+              value={pesoAtual}
+              onChange={(v) => setPesoAtual(Number(v))}
+              options={gerarArrayPeso()}
+              unit="kg"
+            />
+
+            <p className="text-4xl text-center font-semibold">{pesoAtual} kg</p>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 5 — ALTURA
+      // ------------------------
       case 5:
         return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold text-[#0A0A0A] text-left">
-                Qual é a sua altura?
-              </h2>
-              <p className="text-sm text-[#6F6F6F] mt-2 text-left">
-                Ajuste usando o seletor abaixo
-              </p>
-            </div>
-            
-            <div className="flex justify-center items-center py-4">
-              <ScrollWheelPicker
-                value={altura}
-                onChange={(val) => setAltura(val as number)}
-                options={gerarArrayAltura()}
-              />
-            </div>
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">Qual é a sua altura?</h2>
+            <p className="text-[#6F6F6F]">Ajuste usando o seletor abaixo</p>
 
-            <div className="text-center pb-4">
-              <p className="text-4xl font-semibold text-[#0A0A0A]">
-                {altura} cm
+            <ScrollWheelPicker
+              value={altura}
+              onChange={(v) => setAltura(Number(v))}
+              options={gerarArrayAltura()}
+              unit="cm"
+            />
+
+            <p className="text-4xl text-center font-semibold">{altura} cm</p>
+          </div>
+        );
+
+      // ------------------------
+      // STEP 6 — PESO DESEJADO
+      // ------------------------
+      case 6:
+        return (
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">
+              Qual peso você deseja atingir?
+            </h2>
+            <p className="text-[#6F6F6F]">Ajuste usando o seletor abaixo</p>
+
+            <ScrollWheelPicker
+              value={pesoDesejado}
+              onChange={(v) => setPesoDesejado(Number(v))}
+              options={gerarArrayPeso()}
+              unit="kg"
+            />
+
+            <div className="text-center">
+              <p className="text-4xl font-semibold">{pesoDesejado} kg</p>
+              <p className="mt-2 text-red-500">
+                {pesoDesejado - pesoAtual >= 0 ? "+" : ""}
+                {pesoDesejado - pesoAtual} kg
               </p>
             </div>
           </div>
-        )
+        );
 
-      case 6:
+      // ------------------------
+      // STEP 7 — DATA DE NASCIMENTO
+      // ------------------------
+      case 7:
         return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold text-[#0A0A0A] text-left">
-                Qual peso você deseja atingir?
-              </h2>
-              <p className="text-sm text-[#6F6F6F] mt-2 text-left">
-                Ajuste usando o seletor abaixo
-              </p>
-            </div>
-            
-            <div className="flex justify-center items-center py-4">
-              <ScrollWheelPicker
-                value={pesoDesejado}
-                onChange={(val) => setPesoDesejado(val as number)}
-                options={gerarArrayPeso()}
-              />
-            </div>
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">Quando você nasceu?</h2>
+            <p className="text-[#6F6F6F]">
+              Isso será usado para calibrar seu plano personalizado
+            </p>
 
-            <div className="text-center pb-4">
-              <p className="text-4xl font-semibold text-[#0A0A0A]">
-                {pesoDesejado} kg
-              </p>
-              {pesoAtual > 0 && (
-                <p className="text-lg text-[#E54545] mt-2 font-medium">
-                  {pesoDesejado < pesoAtual ? '' : '+'}{pesoDesejado - pesoAtual} kg
-                </p>
+            <div className="flex justify-center gap-8">
+              <div className="flex flex-col items-center">
+                <span className="mb-2 text-sm text-[#6F6F6F] font-bold">
+                  Dia
+                </span>
+                <ScrollWheelPickerDate
+                  value={dia}
+                  onChange={(v) => setDia(Number(v))}
+                  options={dias}
+                />
+              </div>
+
+              <div className="flex flex-col items-center">
+                <span className="mb-2 text-sm text-[#6F6F6F] font-bold">
+                  Mês
+                </span>
+                <ScrollWheelPickerDate
+                  value={mes}
+                  onChange={(v) => setMes(String(v))}
+                  options={meses}
+                />
+              </div>
+
+              <div className="flex flex-col items-center">
+                <span className="mb-2 text-sm text-[#6F6F6F] font-bold">
+                  Ano
+                </span>
+                <ScrollWheelPickerDate
+                  value={ano}
+                  onChange={(v) => setAno(Number(v))}
+                  options={anos}
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      // ------------------------
+      // STEP 8 — HORÁRIO TREINO
+      // ------------------------
+      case 8:
+        return (
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">Quando você treina?</h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
+            <div className="space-y-3">
+              {["Manhã", "Tarde", "Noite", "Varia muito", "Não treino"].map(
+                (opt) => (
+                  <button
+                    key={opt}
+                    onClick={() =>
+                      setQuizData({ ...quizData, horario_treino: opt })
+                    }
+                    className={`w-full h-14 rounded-xl border-2 ${
+                      quizData.horario_treino === opt
+                        ? "border-[#00C974]"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                )
               )}
             </div>
           </div>
-        )
+        );
 
-      case 7:
-        return (
-          <div className="space-y-8">
-            <div>
-              <h2 className="text-2xl font-bold text-[#0A0A0A] text-left">
-                Quando você nasceu?
-              </h2>
-              <p className="text-sm text-[#6F6F6F] mt-2 text-left">
-                Selecione sua data de nascimento
-              </p>
-            </div>
-            
-            <div className="flex justify-center items-center gap-4 py-4">
-              <ScrollWheelPicker
-                value={diaNascimento}
-                onChange={(val) => setDiaNascimento(val as number)}
-                options={dias}
-                unit="Dia"
-              />
-              
-              <ScrollWheelPicker
-                value={mesNascimento}
-                onChange={(val) => setMesNascimento(val as string)}
-                options={meses}
-                unit="Mês"
-              />
-              
-              <ScrollWheelPicker
-                value={anoNascimento}
-                onChange={(val) => setAnoNascimento(val as number)}
-                options={anos}
-                unit="Ano"
-              />
-            </div>
-          </div>
-        )
-
-      case 8:
-        return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
-              Quando você treina?
-            </h2>
-            <div className="space-y-3">
-              {['Manhã', 'Tarde', 'Noite', 'Varia muito', 'Não treino'].map(option => (
-                <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, horario_treino: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.horario_treino === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.horario_treino === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-        )
-
+      // ------------------------
+      // STEP 9 — ALIMENTAÇÃO
+      // ------------------------
       case 9:
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">
               Como você se alimenta atualmente?
             </h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
             <div className="space-y-3">
-              {['Muito mal', 'Ruim', 'Mediana', 'Boa', 'Muito boa'].map(option => (
-                <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, alimentacao_atual: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.alimentacao_atual === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.alimentacao_atual === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
-                </button>
-              ))}
+              {["Muito mal", "Mal", "Mediana", "Boa", "Muito boa"].map(
+                (opt) => (
+                  <button
+                    key={opt}
+                    onClick={() =>
+                      setQuizData({ ...quizData, alimentacao_atual: opt })
+                    }
+                    className={`w-full h-14 rounded-xl border-2 ${
+                      quizData.alimentacao_atual === opt
+                        ? "border-[#00C974]"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                )
+              )}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 10 — REFEIÇÕES DIA
+      // ------------------------
       case 10:
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">
               Quantas refeições faz por dia?
             </h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
             <div className="space-y-3">
-              {['2', '3', '4', '5 ou mais'].map(option => (
+              {["2", "3", "4", "5 ou mais"].map((opt) => (
                 <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, refeicoes_dia: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.refeicoes_dia === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
+                  key={opt}
+                  onClick={() =>
+                    setQuizData({ ...quizData, refeicoes_dia: opt })
+                  }
+                  className={`w-full h-14 rounded-xl border-2 ${
+                    quizData.refeicoes_dia === opt
+                      ? "border-[#00C974]"
+                      : "border-gray-200"
                   }`}
                 >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.refeicoes_dia === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
+                  {opt}
                 </button>
               ))}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 11 — ROTINA
+      // ------------------------
       case 11:
         return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 text-left">
-                Como é sua rotina de trabalho/estudo?
-              </h2>
-              <p className="text-sm text-gray-500 mt-2 text-left">
-                Você pode escolher mais de uma opção.
-              </p>
-            </div>
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">
+              Como é sua rotina de trabalho/estudo?
+            </h2>
+            <p className="text-[#6F6F6F]">Pode escolher mais de uma opção</p>
+
             <div className="space-y-3">
-              {['Sentado o dia todo', 'Em pé o dia todo', 'Muito movimento', 'Trabalha/estuda e não cozinha', 'Rotina corrida', 'Bastante tempo livre'].map(option => (
+              {[
+                "Sentado o dia todo",
+                "Em pé o dia todo",
+                "Muito movimento",
+                "Trabalha/estuda e não cozinha",
+                "Rotina corrida",
+                "Bastante tempo livre",
+              ].map((opt) => (
                 <button
-                  key={option}
-                  onClick={() => handleMultiSelect('rotina_trabalho', option)}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.rotina_trabalho.includes(option)
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
+                  key={opt}
+                  onClick={() => {
+                    const exists = quizData.rotina_trabalho.includes(opt);
+                    const updated = exists
+                      ? quizData.rotina_trabalho.filter((o) => o !== opt)
+                      : [...quizData.rotina_trabalho, opt];
+
+                    setQuizData({ ...quizData, rotina_trabalho: updated });
+                  }}
+                  className={`w-full h-14 rounded-xl border-2 ${
+                    quizData.rotina_trabalho.includes(opt)
+                      ? "border-[#00C974]"
+                      : "border-gray-200"
                   }`}
                 >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.rotina_trabalho.includes(option) && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
+                  {opt}
                 </button>
               ))}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 12 — DISCIPLINA
+      // ------------------------
       case 12:
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
-              Nível de disciplina atual
-            </h2>
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">Nível de disciplina atual</h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
             <div className="space-y-3">
-              {['Muito baixa', 'Baixa', 'Média', 'Alta', 'Muito alta'].map(option => (
-                <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, nivel_disciplina: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.nivel_disciplina === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.nivel_disciplina === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
-                </button>
-              ))}
+              {["Muito baixa", "Baixa", "Média", "Alta", "Muito alta"].map(
+                (opt) => (
+                  <button
+                    key={opt}
+                    onClick={() =>
+                      setQuizData({ ...quizData, nivel_disciplina: opt })
+                    }
+                    className={`w-full h-14 rounded-xl border-2 ${
+                      quizData.nivel_disciplina === opt
+                        ? "border-[#00C974]"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                )
+              )}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 13 — DIFICULDADE PRINCIPAL
+      // ------------------------
       case 13:
         return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 text-left">
-                Dificuldade principal
-              </h2>
-              <p className="text-sm text-gray-500 mt-2 text-left">
-                Você pode escolher mais de uma opção.
-              </p>
-            </div>
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">Dificuldade principal</h2>
+            <p className="text-[#6F6F6F]">Pode escolher mais de uma</p>
+
             <div className="space-y-3">
-              {['Falta de disciplina', 'Falta de organização', 'Não sei o que comer', 'Esqueço de registrar', 'Falta de tempo'].map(option => (
+              {[
+                "Falta de disciplina",
+                "Falta de organização",
+                "Não sei o que comer",
+                "Esqueço de registrar",
+                "Falta de tempo",
+              ].map((opt) => (
                 <button
-                  key={option}
-                  onClick={() => handleMultiSelect('dificuldade_principal', option)}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.dificuldade_principal.includes(option)
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
+                  key={opt}
+                  onClick={() => {
+                    const exists = quizData.dificuldade_principal.includes(opt);
+                    const updated = exists
+                      ? quizData.dificuldade_principal.filter((o) => o !== opt)
+                      : [...quizData.dificuldade_principal, opt];
+
+                    setQuizData({
+                      ...quizData,
+                      dificuldade_principal: updated,
+                    });
+                  }}
+                  className={`w-full h-14 rounded-xl border-2 ${
+                    quizData.dificuldade_principal.includes(opt)
+                      ? "border-[#00C974]"
+                      : "border-gray-200"
                   }`}
                 >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.dificuldade_principal.includes(option) && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
+                  {opt}
                 </button>
               ))}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 14 — HORÁRIO DIFÍCIL
+      // ------------------------
       case 14:
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">
               Qual é o seu horário mais difícil do dia?
             </h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
             <div className="space-y-3">
-              {['Manhã', 'Tarde', 'Noite', 'Madrugada'].map(option => (
+              {["Manhã", "Tarde", "Noite", "Madrugada"].map((opt) => (
                 <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, horario_dificil: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.horario_dificil === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
+                  key={opt}
+                  onClick={() =>
+                    setQuizData({ ...quizData, horario_dificil: opt })
+                  }
+                  className={`w-full h-14 rounded-xl border-2 ${
+                    quizData.horario_dificil === opt
+                      ? "border-[#00C974]"
+                      : "border-gray-200"
                   }`}
                 >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.horario_dificil === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
+                  {opt}
                 </button>
               ))}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 15 — ÁGUA
+      // ------------------------
       case 15:
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
-              Bebe água regularmente?
-            </h2>
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">Bebe água regularmente?</h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
             <div className="space-y-3">
-              {['Quase nada', 'Pouco', 'Moderado', 'Muito', 'Bebo o suficiente'].map(option => (
+              {[
+                "Quase nada",
+                "Pouco",
+                "Moderado",
+                "Muito",
+                "Bebo o suficiente",
+              ].map((opt) => (
                 <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, agua: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.agua === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
+                  key={opt}
+                  onClick={() => setQuizData({ ...quizData, agua: opt })}
+                  className={`w-full h-14 rounded-xl border-2 ${
+                    quizData.agua === opt
+                      ? "border-[#00C974]"
+                      : "border-gray-200"
                   }`}
                 >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.agua === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
+                  {opt}
                 </button>
               ))}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 16 — SONO
+      // ------------------------
       case 16:
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
-              Como está seu sono?
-            </h2>
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">Como está seu sono?</h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
             <div className="space-y-3">
-              {['Muito ruim', 'Ruim', 'Normal', 'Bom', 'Excelente'].map(option => (
-                <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, sono: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.sono === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.sono === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
-                </button>
-              ))}
+              {["Muito ruim", "Ruim", "Normal", "Bom", "Excelente"].map(
+                (opt) => (
+                  <button
+                    key={opt}
+                    onClick={() => setQuizData({ ...quizData, sono: opt })}
+                    className={`w-full h-14 rounded-xl border-2 ${
+                      quizData.sono === opt
+                        ? "border-[#00C974]"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    {opt}
+                  </button>
+                )
+              )}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 17 — TENTOU DIETA
+      // ------------------------
       case 17:
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">
               Já tentou seguir dieta antes?
             </h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
             <div className="space-y-3">
-              {['Sim, muitas vezes', 'Algumas vezes', 'Poucas vezes', 'Nunca'].map(option => (
+              {[
+                "Sim, muitas vezes",
+                "Algumas vezes",
+                "Poucas vezes",
+                "Nunca",
+              ].map((opt) => (
                 <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, tentou_dieta: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.tentou_dieta === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
+                  key={opt}
+                  onClick={() =>
+                    setQuizData({ ...quizData, tentou_dieta: opt })
+                  }
+                  className={`w-full h-14 rounded-xl border-2 ${
+                    quizData.tentou_dieta === opt
+                      ? "border-[#00C974]"
+                      : "border-gray-200"
                   }`}
                 >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.tentou_dieta === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
+                  {opt}
                 </button>
               ))}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 18 — EXPECTATIVA
+      // ------------------------
       case 18:
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
-              O que você espera do app?
-            </h2>
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">O que você espera do app?</h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
             <div className="space-y-3">
-              {['Organização', 'Motivação', 'Simplicidade', 'Acompanhamento', 'Tudo acima'].map(option => (
+              {[
+                "Organização",
+                "Motivação",
+                "Simplicidade",
+                "Acompanhamento",
+                "Tudo acima",
+              ].map((opt) => (
                 <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, expectativa: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.expectativa === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
+                  key={opt}
+                  onClick={() => setQuizData({ ...quizData, expectativa: opt })}
+                  className={`w-full h-14 rounded-xl border-2 ${
+                    quizData.expectativa === opt
+                      ? "border-[#00C974]"
+                      : "border-gray-200"
                   }`}
                 >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.expectativa === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
+                  {opt}
                 </button>
               ))}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 19 — PRAZO
+      // ------------------------
       case 19:
         return (
-          <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-900 text-left">
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">
               Em quanto tempo quer ver resultados?
             </h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
             <div className="space-y-3">
-              {['2 semanas', '1 mês', '2 meses', '3 meses', 'Sem prazo definido'].map(option => (
+              {[
+                "2 semanas",
+                "1 mês",
+                "2 meses",
+                "3 meses",
+                "Sem prazo definido",
+              ].map((opt) => (
                 <button
-                  key={option}
-                  onClick={() => setQuizData({ ...quizData, prazo_resultado: option })}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.prazo_resultado === option 
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
+                  key={opt}
+                  onClick={() =>
+                    setQuizData({ ...quizData, prazo_resultado: opt })
+                  }
+                  className={`w-full h-14 rounded-xl border-2 ${
+                    quizData.prazo_resultado === opt
+                      ? "border-[#00C974]"
+                      : "border-gray-200"
                   }`}
                 >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.prazo_resultado === option && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
+                  {opt}
                 </button>
               ))}
             </div>
           </div>
-        )
+        );
 
+      // ------------------------
+      // STEP 20 — ALERGIAS
+      // ------------------------
       case 20:
         return (
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-2xl font-bold text-gray-900 text-left">
-                Você possui alguma alergia ou intolerância?
-              </h2>
-              <p className="text-sm text-gray-500 mt-2 text-left">
-                Você pode escolher mais de uma opção.
-              </p>
-            </div>
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">
+              Você possui alguma alergia ou intolerância?
+            </h2>
+            <p className="text-[#6F6F6F]">
+              Selecione quantas forem necessárias
+            </p>
+
             <div className="space-y-3">
-              {['Glúten', 'Lactose', 'Frutos do mar', 'Ovos', 'Amendoim', 'Corantes/conservantes'].map(option => (
+              {[
+                "Glúten",
+                "Lactose",
+                "Frutos do mar",
+                "Ovos",
+                "Amendoim",
+                "Corantes/conservantes",
+                "Nenhuma alergia/intolerância",
+              ].map((opt) => (
                 <button
-                  key={option}
-                  onClick={() => handleMultiSelect('alergias', option)}
-                  className={`w-full h-14 px-6 text-left flex items-center justify-between rounded-xl transition-all ${
-                    quizData.alergias.includes(option)
-                      ? 'bg-white border-2 border-[#00C974] shadow-sm' 
-                      : 'bg-white border-2 border-gray-200 hover:border-gray-300'
+                  key={opt}
+                  onClick={() => {
+                    const exists = quizData.alergias.includes(opt);
+                    const updated = exists
+                      ? quizData.alergias.filter((o) => o !== opt)
+                      : [...quizData.alergias, opt];
+
+                    setQuizData({ ...quizData, alergias: updated });
+                  }}
+                  className={`w-full h-14 rounded-xl border-2 ${
+                    quizData.alergias.includes(opt)
+                      ? "border-[#00C974]"
+                      : "border-gray-200"
                   }`}
                 >
-                  <span className="text-gray-900 font-medium">{option}</span>
-                  {quizData.alergias.includes(option) && (
-                    <Check className="w-5 h-5 text-[#00C974]" />
-                  )}
+                  {opt}
                 </button>
               ))}
-            </div>
-            <div className="pt-4">
-              <label className="text-sm font-medium text-gray-700 block mb-2">
-                Outras (especifique):
-              </label>
+
               <Input
-                type="text"
-                placeholder="Digite outras alergias..."
+                placeholder="Outras alergias..."
                 value={quizData.outras_alergias}
-                onChange={(e) => setQuizData({ ...quizData, outras_alergias: e.target.value })}
-                className="h-12 border-2"
+                onChange={(e) =>
+                  setQuizData({
+                    ...quizData,
+                    outras_alergias: e.target.value,
+                  })
+                }
+                className="w-full h-14 px-4 rounded-xl border-2 border-gray-200"
               />
             </div>
           </div>
-        )
+        );
+      // ------------------------
+      // STEP 22 — FINAL
+      // ------------------------
+      case 21:
+        return (
+          <div className="text-center space-y-6">
+            <h2 className="text-3xl font-bold">Tudo pronto!</h2>
+            <p className="text-[#6F6F6F]">Clique em finalizar para avançar.</p>
+            <div className="text-6xl">🎉</div>
+          </div>
+        );
 
       default:
-        return null
+        return <h2>Passo {step} não configurado.</h2>;
     }
-  }
-
+  };
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-2xl mx-auto px-6 py-8">
+        {/* HEADER */}
         <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <Button
-              onClick={handleBack}
-              variant="ghost"
-              className="p-2"
-            >
+          <div className="flex justify-between items-center">
+            <Button onClick={handleBack} variant="ghost" className="p-2">
               <ChevronLeft className="w-6 h-6" />
             </Button>
+
             <span className="text-sm text-gray-600">
               {step} de {totalSteps}
             </span>
           </div>
-          {/* Barra de progresso verde #00C974 */}
-          <div className="w-full h-2 bg-[#E5E5E5] rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-[#00C974] transition-all duration-300 rounded-full"
+
+          <div className="w-full h-2 bg-gray-200 rounded-full mt-4">
+            <div
+              className="h-full bg-[#00C974] rounded-full transition-all"
               style={{ width: `${progress}%` }}
             />
           </div>
@@ -890,31 +882,55 @@ export default function QuizPage() {
 
         {renderQuestion()}
 
-        <div className="mt-8">
-          <Button
-            onClick={handleNext}
-            disabled={!canProceed()}
-            className={`w-full h-14 text-lg rounded-full transition-all ${
-              canProceed()
-                ? 'bg-[#00C974] hover:bg-[#00B368] text-white'
-                : 'bg-[#E1E1E1] text-[#9A9A9A] cursor-not-allowed'
-            }`}
-          >
-            {step === totalSteps ? 'Finalizar' : 'Continuar'}
-          </Button>
-        </div>
+        {/* Gatilho 1 */}
+        <MotivationalModal
+          open={showMetaModal}
+          title="🎯 Sua meta é totalmente possível!"
+          subtitle="Com consistência e o plano certo, você chega lá."
+          primaryLabel="Ver projeção"
+          onPrimary={() => {
+            setShowMetaModal(false);
+            setTimeout(() => setStep(step + 1), 150);
+          }}
+          onClose={() => setShowMetaModal(false)}
+        />
+
+        {/* Gatilho 2 */}
+        <MotivationalModal
+          open={showProgressModal}
+          title="📉 Olha sua evolução!"
+          subtitle="Pequenos passos somam grandes resultados."
+          primaryLabel="Continuar"
+          onPrimary={() => {
+            setShowProgressModal(false);
+            setStep(step + 1);
+          }}
+          onClose={() => setShowProgressModal(false)}
+        />
+
+        {/* Gatilho 3 */}
+        <MotivationalModal
+          open={showAlmostThereModal}
+          title="💪 Você está MUITO perto!"
+          subtitle="Continue para ver seu plano totalmente personalizado."
+          primaryLabel="Ver meu plano"
+          onPrimary={() => {
+            setShowAlmostThereModal(false);
+            localStorage.setItem("quizData", JSON.stringify(quizData));
+            localStorage.setItem("quiz_completed", "true");
+            router.push("/quiz-result");
+          }}
+          onClose={() => setShowAlmostThereModal(false)}
+        />
+
+        {/* BOTÃO FINAL */}
+        <Button
+          onClick={handleNext}
+          className="w-full h-14 mt-10 rounded-full bg-[#00C974] hover:bg-[#00B368] text-white text-lg"
+        >
+          {step === totalSteps ? "Finalizar" : "Continuar"}
+        </Button>
       </div>
-      
-      {/* CSS para esconder scrollbar */}
-      <style jsx global>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
     </div>
-  )
+  );
 }
