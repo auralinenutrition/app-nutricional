@@ -1,0 +1,3 @@
+{
+  "/api/meals/create/route": "app/api/meals/create/route.js"
+}

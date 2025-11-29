@@ -16,8 +16,10 @@ import FloatingActionButton from "@/components/home/FloatingActionButton";
 import loadDailyProgress from "@/services/home/loadDailyProgress";
 import loadTodayMeals from "@/services/home/loadTodayMeals";
 import loadWeeklyPlan from "@/services/home/loadWeeklyPlan";
-import { loadWeeklyPlanMock } from "@/services/home/MealPlanMock";
 
+// -------------------------
+// TYPES
+// -------------------------
 type Meal = {
   title: string;
   calories?: number;
@@ -27,75 +29,114 @@ type Meal = {
 export default function HomePage() {
   const [user, setUser] = useState<User | null>(null);
 
+  const [progress, setProgress] = useState<any>(null);
   const [meals, setMeals] = useState<Meal[]>([]);
   const [shoppingItems, setShoppingItems] = useState<string[]>([]);
   const [calories, setCalories] = useState<number>(0);
 
-  const [waterPct, setWaterPct] = useState<number>(0);
-  const [mealsPct, setMealsPct] = useState<number>(0);
-
   const [weeklyPlan, setWeeklyPlan] = useState<AiPlanDays | null>(null);
-  const [weeklyTotals, setWeeklyTotals] = useState<Record<
-    string,
-    number
-  > | null>(null);
+  const [weeklyTotals, setWeeklyTotals] = useState<Record<string, number> | null>(
+    null
+  );
 
-  // Buscar usuário logado
+  // -----------------------------
+  // LOAD USER
+  // -----------------------------
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setUser(data.user ?? null);
     });
   }, []);
 
-  // Carregar metas diárias quando o usuário estiver disponível
+  // -----------------------------
+  // RELOAD HOME DATA
+  // -----------------------------
+  async function reloadHomeData(uid: string) {
+    const p = await loadDailyProgress(uid);
+    setProgress(p);
+    setCalories(p.caloriesValue);
+
+    const todayMeals = await loadTodayMeals(uid);
+    setMeals(todayMeals);
+
+    const weekly = await loadWeeklyPlan(uid);
+    setWeeklyPlan(weekly.days);
+    setWeeklyTotals(weekly.totals);
+  }
+
+  // Carrega ao iniciar
+  useEffect(() => {
+    if (!user) return;
+    reloadHomeData(user.id);
+  }, [user]);
+
+  // Recarrega ao salvar água
   useEffect(() => {
     if (!user) return;
 
-    async function loadData() {
-      // metas diárias
-      const progress = await loadDailyProgress(user!.id);
-      setWaterPct(progress.water);
-      setMealsPct(progress.meals);
-      setCalories(progress.caloriesValue);
+    const handler = () => reloadHomeData(user.id);
 
-      // refeições do dia
-      const todayMeals = await loadTodayMeals(user!.id);
-      setMeals(todayMeals);
-
-      const weekly = await loadWeeklyPlan(user!.id);
-      setWeeklyPlan(weekly.days);
-      setWeeklyTotals(weekly.totals);
-    }
-
-    loadData();
+    window.addEventListener("waterSaved", handler);
+    return () => window.removeEventListener("waterSaved", handler);
   }, [user]);
 
+  // Recarrega ao salvar refeição
+  useEffect(() => {
+    if (!user) return;
+
+    const handler = () => reloadHomeData(user.id);
+
+    window.addEventListener("mealSaved", handler);
+    return () => window.removeEventListener("mealSaved", handler);
+  }, [user]);
+
+  // -----------------------------
+  // LOADING STATE
+  // -----------------------------
+  if (!progress) return null;
+
+  // -----------------------------
+  // RENDER COMPONENT
+  // -----------------------------
   return (
     <div className="pb-24 pt-6 px-3">
-      {/* HEADER */}
       <Header user={user} />
 
-      {/* METAS DIÁRIAS */}
-      <DailyGoals water={waterPct} meals={mealsPct} calories={calories} />
+      <DailyGoals
+        water={progress.water}
+        meals={progress.meals}
+        calories={progress.calories}
+        waterValue={progress.waterValue}
+        waterGoal={progress.metaAgua ?? 2000}
+        mealsDone={progress.mealsDone}
+        mealsGoal={progress.metaRefeicoes ?? 4}
+        caloriesValue={progress.caloriesValue}
+        caloriesGoal={progress.metaCalorias ?? 2000}
+      />
 
-      {/* REFEIÇÕES DE HOJE */}
       <TodayMeals meals={meals} />
 
-      {/* PLANO SEMANAL */}
-      <WeeklyPlan plan={weeklyPlan ?? { domingo: [], segunda: [], terca: [], quarta: [], quinta: [], sexta: [], sabado: [] }} 
-            totals={weeklyTotals ?? {}} />
+      <WeeklyPlan
+        plan={
+          weeklyPlan ?? {
+            domingo: [],
+            segunda: [],
+            terca: [],
+            quarta: [],
+            quinta: [],
+            sexta: [],
+            sabado: [],
+          }
+        }
+        totals={weeklyTotals ?? {}}
+      />
 
-
-      {/* LISTA + CALORIAS */}
       <div className="grid grid-cols-2 gap-4">
         <ShoppingPreview items={shoppingItems} />
         <CaloriesCard calories={calories} />
       </div>
 
-      {/* AÇÕES */}
       <FloatingActionButton />
-
-      {/* BOTTOM BAR */}
       <BottomBar />
     </div>
   );

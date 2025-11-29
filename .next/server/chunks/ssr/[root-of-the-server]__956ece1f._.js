@@ -112,7 +112,7 @@ function PlanosPage() {
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
     const selecionarPlano = (plano)=>{
         localStorage.setItem("planoSelecionado", plano);
-        if (plano === "gratuito") {
+        if (plano === "free") {
             router.push("/signup");
         } else {
             router.push(`/checkout?plano=${plano}`);
@@ -142,7 +142,7 @@ function PlanosPage() {
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                         className: "border-2 border-[#00C974] rounded-2xl p-6 shadow-sm bg-white cursor-pointer transition hover:shadow-md",
-                        onClick: ()=>selecionarPlano("gratuito"),
+                        onClick: ()=>selecionarPlano("free"),
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                                 className: "text-xl font-bold text-[#0A0A0A]",
@@ -190,7 +190,7 @@ function PlanosPage() {
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
-                                onClick: ()=>selecionarPlano("gratuito"),
+                                onClick: ()=>selecionarPlano("free"),
                                 className: "w-full mt-4 rounded-full bg-[#00C974] text-white hover:bg-[#00B368]",
                                 children: "Continuar grátis"
                             }, void 0, false, {

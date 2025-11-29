@@ -45,18 +45,15 @@ export default async function loadTodayMeals(
     if (plan?.days && plan.days[todayKey]) {
       todayMealsFromAI = plan.days[todayKey];
     } else {
-      // -------------------------------
-      // 2B • Mock (fallback)
-      // -------------------------------
       const mock = await loadWeeklyPlanMock();
       todayMealsFromAI = mock[todayKey] ?? [];
     }
 
     // -------------------------------
-    // 3 • Buscar refeições registradas HOJE
+    // 3 • Buscar refeições registradas HOJE (timezone correto)
     // -------------------------------
-    const start = dayjs().startOf("day").toISOString();
-    const end = dayjs().endOf("day").toISOString();
+    const start = dayjs().startOf("day").toDate().toISOString();
+    const end = dayjs().endOf("day").toDate().toISOString();
 
     const { data: userMeals } = await supabase
       .from("meals")
@@ -65,18 +62,16 @@ export default async function loadTodayMeals(
       .gte("created_at", start)
       .lte("created_at", end);
 
-    const mealsByTitle = (userMeals ?? []).reduce((map, meal) => {
-      map[meal.title] = meal;
-      return map;
-    }, {} as Record<string, any>);
+    // -------------------------------
+    // 4 • Matching robusto por título
+    // -------------------------------
+    const findUserMeal = (title: string) =>
+      (userMeals ?? []).find((m) => m.title?.trim() === title.trim());
 
-    // -------------------------------
-    // 4 • Montar resposta final
-    // -------------------------------
     const order = ["Café da manhã", "Almoço", "Café da tarde", "Jantar"];
 
     return order.map((ref) => {
-      const userMeal = mealsByTitle[ref];
+      const userMeal = findUserMeal(ref);
       const aiMeal = todayMealsFromAI.find((m) => m.title === ref);
 
       if (userMeal) {

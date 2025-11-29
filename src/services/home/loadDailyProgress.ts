@@ -2,15 +2,17 @@ import { supabase } from "@/lib/supabase";
 import dayjs from "dayjs";
 
 type DailyProgress = {
-  water: number;        // percentual 0–100
-  meals: number;        // percentual 0–100
-  calories: number;     // percentual 0–100
-  caloriesValue: number; // calorias totais consumidas
-  mealsDone: number;     // refeições concluídas
-  waterValue: number;    // ml realmente ingeridos
+  water: number;        
+  meals: number;        
+  calories: number;     
+  caloriesValue: number;
+  mealsDone: number;    
+  waterValue: number;   
 };
 
-export default async function loadDailyProgress(userId: string): Promise<DailyProgress> {
+export default async function loadDailyProgress(
+  userId: string
+): Promise<DailyProgress> {
   try {
     // -----------------------
     // Buscar metas do usuário
@@ -26,10 +28,10 @@ export default async function loadDailyProgress(userId: string): Promise<DailyPr
     const metaRefeicoes = user?.meta_refeicoes ?? 4;
 
     // -----------------------
-    // Definir intervalo do dia
+    // Intervalo local do dia (CORRIGIDO)
     // -----------------------
-    const startDay = dayjs().startOf("day").toISOString();
-    const endDay = dayjs().endOf("day").toISOString();
+    const startDay = dayjs().startOf("day").toDate().toISOString();
+    const endDay = dayjs().endOf("day").toDate().toISOString();
 
     // -----------------------
     // Buscar água ingerida
@@ -41,14 +43,15 @@ export default async function loadDailyProgress(userId: string): Promise<DailyPr
       .gte("created_at", startDay)
       .lte("created_at", endDay);
 
-    const totalWater = waterRecords?.reduce((sum, w) => sum + (w.amount ?? 0), 0) ?? 0;
+    const totalWater =
+      waterRecords?.reduce((sum, w) => sum + (w.amount ?? 0), 0) ?? 0;
 
     // -----------------------
-    // Buscar refeições registradas
+    // Buscar refeições registradas HOJE
     // -----------------------
     const { data: mealRecords } = await supabase
       .from("meals")
-      .select("id")
+      .select("id, calories")
       .eq("user_id", userId)
       .gte("created_at", startDay)
       .lte("created_at", endDay);
@@ -57,17 +60,10 @@ export default async function loadDailyProgress(userId: string): Promise<DailyPr
     const mealsPct = Math.min((mealsDone / metaRefeicoes) * 100, 100);
 
     // -----------------------
-    // Buscar calorias ingeridas
+    // Calorias totais
     // -----------------------
-    const { data: caloriesRecords } = await supabase
-      .from("meals")
-      .select("calories")
-      .eq("user_id", userId)
-      .gte("created_at", startDay)
-      .lte("created_at", endDay);
-
     const totalCalories =
-      caloriesRecords?.reduce((sum, m) => sum + (m.calories ?? 0), 0) ?? 0;
+      mealRecords?.reduce((sum, m) => sum + (m.calories ?? 0), 0) ?? 0;
 
     return {
       water: Math.min((totalWater / metaAgua) * 100, 100),

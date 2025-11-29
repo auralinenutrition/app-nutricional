@@ -2,44 +2,53 @@
 
 import { Utensils, Droplet, Scale, Camera } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useRouter } from "next/navigation";
 
 type Props = {
   open: boolean;
   onClose?: () => void;
+
+  onRegisterMeal?: () => void;
+  onRegisterWater?: () => void;
+  onRegisterWeight?: () => void;
+  onRegisterPhoto?: () => void;
 };
 
-export default function ActionMenu({ open, onClose }: Props) {
-  const router = useRouter();
+export default function ActionMenu({
+  open,
+  onClose,
+  onRegisterMeal,
+  onRegisterWater,
+  onRegisterWeight,
+  onRegisterPhoto,
+}: Props) {
+  if (!open) return null;
 
   const actions = [
     {
       key: "meal",
       label: "Registrar refeição",
       icon: <Utensils size={20} strokeWidth={2.2} className="text-[#00C974]" />,
-      route: "/meals/new",
+      onClick: onRegisterMeal,
     },
     {
       key: "water",
       label: "Registrar água",
       icon: <Droplet size={20} strokeWidth={2.2} className="text-[#00C974]" />,
-      route: "/water",
+      onClick: onRegisterWater,
     },
     {
       key: "weight",
       label: "Registrar peso",
       icon: <Scale size={20} strokeWidth={2.2} className="text-[#00C974]" />,
-      route: "/progress/weight",
+      onClick: onRegisterWeight,
     },
     {
       key: "photo",
       label: "Foto de progresso",
       icon: <Camera size={20} strokeWidth={2.2} className="text-[#00C974]" />,
-      route: "/progress/photo",
+      onClick: onRegisterPhoto,
     },
   ];
-
-  if (!open) return null;
 
   return (
     <AnimatePresence>
@@ -53,8 +62,8 @@ export default function ActionMenu({ open, onClose }: Props) {
           <motion.button
             key={a.key}
             onClick={() => {
-              router.push(a.route);
-              if (onClose) onClose();
+              a.onClick && a.onClick();
+              onClose && onClose();
             }}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0, transition: { delay: i * 0.06 } }}

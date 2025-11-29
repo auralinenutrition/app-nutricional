@@ -1,58 +1,104 @@
 // src/contexts/AppModalContext.tsx
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import React, { createContext, useCallback, useState } from "react";
+import WaterModal from "@/components/modals/WaterModal";
+import MealModal from "@/components/modals/MealModal";
+// import WeightModal from "@/components/modals/WeightModal";
+// import PhotoModal from "@/components/modals/PhotoModal";
 
-type ModalType = "meal" | "water" | "weight" | "photo" | null;
+type ModalState = {
+  open: boolean;
+  data?: any;
+  onSaved?: (file: File | null) => void;
+};
 
+/* -----------------------------------
+   Tipagem do Contexto
+----------------------------------- */
 type AppModalContextType = {
-  modal: ModalType;
-  data: any;
-  openMeal: (data?: any) => void;
-  openWater: (data?: any) => void;
-  openWeight: (data?: any) => void;
-  openPhoto: (data?: any) => void;
+  openMeal: (opts?: {
+    data?: any;
+    onSaved?: (file: File | null) => void;
+  }) => void;
+  openWater: (opts?: {
+    data?: any;
+    onSaved?: (file: File | null) => void;
+  }) => void;
+  openWeight: (opts?: {
+    data?: any;
+    onSaved?: (file: File | null) => void;
+  }) => void;
+  openPhoto: (opts?: {
+    data?: any;
+    onSaved?: (file: File | null) => void;
+  }) => void;
   close: () => void;
 };
 
-export const AppModalContext = createContext<AppModalContextType | undefined>(
-  undefined
-);
+export const AppModalContext = createContext<AppModalContextType>({
+  openMeal: () => {},
+  openWater: () => {},
+  openWeight: () => {},
+  openPhoto: () => {},
+  close: () => {},
+});
 
-export function AppModalProvider({ children }: { children: React.ReactNode }) {
-  const [modal, setModal] = useState<ModalType>(null);
-  const [data, setData] = useState<any>(null);
+export default function AppModalProvider({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  /* Estados individuais por modal */
+  const [mealModal, setMealModal] = useState<ModalState>({ open: false });
+  const [waterModal, setWaterModal] = useState<ModalState>({ open: false });
+  const [weightModal, setWeightModal] = useState<ModalState>({ open: false });
+  const [photoModal, setPhotoModal] = useState<ModalState>({ open: false });
 
-  function openMeal(data?: any) {
-    setModal("meal");
-    setData(data ?? null);
-  }
+  /* -------------------------
+     Funções de abertura
+  --------------------------*/
+  const openMeal = useCallback(
+    (opts?: { data?: any; onSaved?: (file: File | null) => void }) => {
+      setMealModal({ open: true, data: opts?.data, onSaved: opts?.onSaved });
+    },
+    []
+  );
 
-  function openWater(data?: any) {
-    setModal("water");
-    setData(data ?? null);
-  }
+  const openWater = useCallback(
+    (opts?: { data?: any; onSaved?: (file: File | null) => void }) => {
+      setWaterModal({ open: true, data: opts?.data, onSaved: opts?.onSaved });
+    },
+    []
+  );
 
-  function openWeight(data?: any) {
-    setModal("weight");
-    setData(data ?? null);
-  }
+  const openWeight = useCallback(
+    (opts?: { data?: any; onSaved?: (file: File | null) => void }) => {
+      setWeightModal({ open: true, data: opts?.data, onSaved: opts?.onSaved });
+    },
+    []
+  );
 
-  function openPhoto(data?: any) {
-    setModal("photo");
-    setData(data ?? null);
-  }
+  const openPhoto = useCallback(
+    (opts?: { data?: any; onSaved?: (file: File | null) => void }) => {
+      setPhotoModal({ open: true, data: opts?.data, onSaved: opts?.onSaved });
+    },
+    []
+  );
 
-  function close() {
-    setModal(null);
-    setData(null);
-  }
+  /* -------------------------
+     Função Global de Close
+  --------------------------*/
+  const close = useCallback(() => {
+    setMealModal({ open: false });
+    setWaterModal({ open: false });
+    setWeightModal({ open: false });
+    setPhotoModal({ open: false });
+  }, []);
 
   return (
     <AppModalContext.Provider
       value={{
-        modal,
-        data,
         openMeal,
         openWater,
         openWeight,
@@ -61,15 +107,26 @@ export function AppModalProvider({ children }: { children: React.ReactNode }) {
       }}
     >
       {children}
+
+      <WaterModal
+        open={waterModal.open}
+        data={waterModal.data}
+        onClose={() => setWaterModal({ open: false })}
+        onSaved={() => {
+          waterModal.onSaved?.(null);
+          setWaterModal({ open: false });
+        }}
+      />
+
+      <MealModal
+        open={mealModal.open}
+        onClose={() => setMealModal({ open: false })}
+        onSaved={(data) => {
+          window.dispatchEvent(new Event("mealSaved")); // <-- AQUI
+          if (mealModal.onSaved) mealModal.onSaved(data);
+          setMealModal({ open: false });
+        }}
+      />
     </AppModalContext.Provider>
   );
-}
-
-// Hook seguro
-export function useAppModal() {
-  const ctx = useContext(AppModalContext);
-  if (!ctx) {
-    throw new Error("useAppModal must be used inside <AppModalProvider>");
-  }
-  return ctx;
 }

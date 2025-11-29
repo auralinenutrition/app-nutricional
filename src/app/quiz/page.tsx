@@ -17,6 +17,7 @@ import quizService from "@/services/quizService";
 // TIPAGEM DO QUIZ
 // ======================================
 type QuizData = {
+  genero: string;
   objetivo: string;
   nivel_treino: string;
   frequencia_treino: string;
@@ -50,6 +51,7 @@ export default function QuizPage() {
   const [step, setStep] = useState(1);
 
   const [quizData, setQuizData] = useState<QuizData>({
+    genero: "",
     objetivo: "",
     nivel_treino: "",
     frequencia_treino: "",
@@ -257,10 +259,38 @@ export default function QuizPage() {
           </div>
         );
 
+
+// ------------------------
+// STEP 4 — GÊNERO
+// ------------------------
+case 4:
+  return (
+    <div className="space-y-10">
+      <h2 className="text-2xl font-bold">Qual é o seu gênero?</h2>
+      <p className="text-[#6F6F6F]">Escolha uma opção</p>
+
+      <div className="space-y-3">
+        {["Masculino", "Feminino"].map((opt) => (
+          <button
+            key={opt}
+            onClick={() => setQuizData({ ...quizData, genero: opt })}
+            className={`w-full h-14 px-6 rounded-xl border-2 ${
+              quizData.genero === opt
+                ? "border-[#00C974]"
+                : "border-gray-200"
+            }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+
       // ------------------------
-      // STEP 4 — PESO ATUAL
+      // STEP 5 — PESO ATUAL
       // ------------------------
-      case 4:
+      case 5:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">Qual é o seu peso atual?</h2>
@@ -278,9 +308,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 5 — ALTURA
+      // STEP 6 — ALTURA
       // ------------------------
-      case 5:
+      case 6:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">Qual é a sua altura?</h2>
@@ -298,9 +328,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 6 — PESO DESEJADO
+      // STEP 7 — PESO DESEJADO
       // ------------------------
-      case 6:
+      case 7:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">
@@ -326,9 +356,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 7 — DATA DE NASCIMENTO
+      // STEP 8 — DATA DE NASCIMENTO
       // ------------------------
-      case 7:
+      case 8:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">Quando você nasceu?</h2>
@@ -374,9 +404,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 8 — HORÁRIO TREINO
+      // STEP 9 — HORÁRIO TREINO
       // ------------------------
-      case 8:
+      case 9:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">Quando você treina?</h2>
@@ -405,9 +435,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 9 — ALIMENTAÇÃO
+      // STEP 10 — ALIMENTAÇÃO
       // ------------------------
-      case 9:
+      case 10:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">
@@ -438,9 +468,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 10 — REFEIÇÕES DIA
+      // STEP 11 — REFEIÇÕES DIA
       // ------------------------
-      case 10:
+      case 11:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">
@@ -469,9 +499,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 11 — ROTINA
+      // STEP 12 — ROTINA
       // ------------------------
-      case 11:
+      case 12:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">
@@ -512,9 +542,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 12 — DISCIPLINA
+      // STEP 13 — DISCIPLINA
       // ------------------------
-      case 12:
+      case 13:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">Nível de disciplina atual</h2>
@@ -543,9 +573,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 13 — DIFICULDADE PRINCIPAL
+      // STEP 14 — DIFICULDADE PRINCIPAL
       // ------------------------
-      case 13:
+      case 14:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">Dificuldade principal</h2>
@@ -586,9 +616,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 14 — HORÁRIO DIFÍCIL
+      // STEP 15 — HORÁRIO DIFÍCIL
       // ------------------------
-      case 14:
+      case 15:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">
@@ -617,9 +647,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 15 — ÁGUA
+      // STEP 16 — ÁGUA
       // ------------------------
-      case 15:
+      case 16:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">Bebe água regularmente?</h2>
@@ -650,9 +680,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 16 — SONO
+      // STEP 17 — SONO
       // ------------------------
-      case 16:
+      case 17:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">Como está seu sono?</h2>
@@ -679,9 +709,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 17 — TENTOU DIETA
+      // STEP 18 — TENTOU DIETA
       // ------------------------
-      case 17:
+      case 18:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">
@@ -715,9 +745,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 18 — EXPECTATIVA
+      // STEP 19 — EXPECTATIVA
       // ------------------------
-      case 18:
+      case 19:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">O que você espera do app?</h2>
@@ -748,9 +778,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 19 — PRAZO
+      // STEP 20 — PRAZO
       // ------------------------
-      case 19:
+      case 20:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">
@@ -785,9 +815,9 @@ export default function QuizPage() {
         );
 
       // ------------------------
-      // STEP 20 — ALERGIAS
+      // STEP 21 — ALERGIAS
       // ------------------------
-      case 20:
+      case 21:
         return (
           <div className="space-y-10">
             <h2 className="text-2xl font-bold">
@@ -844,7 +874,7 @@ export default function QuizPage() {
       // ------------------------
       // STEP 22 — FINAL
       // ------------------------
-      case 21:
+      case 22:
         return (
           <div className="text-center space-y-6">
             <h2 className="text-3xl font-bold">Tudo pronto!</h2>

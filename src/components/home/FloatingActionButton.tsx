@@ -4,9 +4,29 @@ import { useState } from "react";
 import { Plus } from "lucide-react";
 import ActionMenu from "./ActionMenu";
 import { motion, AnimatePresence } from "framer-motion";
+import useAppModal from "@/hooks/useAppModal";
 
 export default function FloatingActionButton() {
   const [open, setOpen] = useState(false);
+  const { openWater, openMeal } = useAppModal();
+
+  const handleOpenWater = () => {
+    setOpen(false);
+    openWater({
+      onSaved: () => {
+        window.dispatchEvent(new Event("waterSaved"));
+      },
+    });
+  };
+
+  const handleOpenMeal = () => {
+    setOpen(false);
+    openMeal({
+      onSaved: () => {
+        window.dispatchEvent(new Event("mealSaved"));
+      },
+    });
+  };
 
   return (
     <>
@@ -23,10 +43,17 @@ export default function FloatingActionButton() {
         )}
       </AnimatePresence>
 
-      {/* Action menu (posicionado acima do FAB) */}
-      <ActionMenu open={open} onClose={() => setOpen(false)} />
+      {/* Menu de ações — agora recebe a função de abrir o modal */}
+      <ActionMenu
+        open={open}
+        onClose={() => setOpen(false)}
+        onRegisterWater={handleOpenWater}
+        onRegisterMeal={handleOpenMeal}
+        // onRegisterWeight={handleOpenWeight}
+        // onRegisterPhoto={handleOpenPhoto}
+      />
 
-      {/* FAB */}
+      {/* BOTÃO FLUTUANTE */}
       <motion.button
         aria-label="Ações rápidas"
         onClick={() => setOpen((s) => !s)}
