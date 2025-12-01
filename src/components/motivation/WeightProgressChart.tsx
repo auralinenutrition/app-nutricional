@@ -9,48 +9,46 @@ import {
   Tooltip,
 } from "recharts";
 
+type ChartProps = {
+  pesoAtual: number;
+  pesoDesejado: number;
+};
+
+/**
+ * Gera projeção linear de peso para 6 semanas.
+ * Exemplo:
+ * - Atual: 70
+ * - Desejado: 80
+ * => Sobe 10kg em 6 semanas → +1.66kg/semana
+ */
+function gerarProjecaoSemanal(pesoAtual: number, pesoDesejado: number) {
+  const semanas = 6;
+  const diffTotal = pesoDesejado - pesoAtual;
+  const passo = diffTotal / semanas;
+
+  const arr = [];
+
+  for (let i = 0; i <= semanas; i++) {
+    const peso = Number((pesoAtual + passo * i).toFixed(1));
+    arr.push({
+      week: `Semana ${i + 1}`,
+      peso,
+    });
+  }
+
+  return arr;
+}
+
 export default function WeightProgressChart({
-  objetivo,
-}: {
-  objetivo: string;
-}) {
-  // Gera o gráfico baseado no objetivo
-  const getData = () => {
-    switch (objetivo) {
-      case "Perder peso":
-        return [
-          { week: "Semana 1", value: 0 },
-          { week: "Semana 2", value: -0.8 },
-          { week: "Semana 3", value: -1.3 },
-          { week: "Semana 4", value: -2.0 },
-          { week: "Semana 5", value: -2.7 },
-          { week: "Semana 6", value: -3.2 },
-        ];
+  pesoAtual,
+  pesoDesejado,
+}: ChartProps) {
+  const data = gerarProjecaoSemanal(pesoAtual, pesoDesejado);
 
-      case "Ganhar massa muscular":
-        return [
-          { week: "Semana 1", value: 0 },
-          { week: "Semana 2", value: +0.4 },
-          { week: "Semana 3", value: +0.9 },
-          { week: "Semana 4", value: +1.4 },
-          { week: "Semana 5", value: +1.8 },
-          { week: "Semana 6", value: +2.2 },
-        ];
-
-      default:
-        // manter peso
-        return [
-          { week: "Semana 1", value: 0 },
-          { week: "Semana 2", value: 0.1 },
-          { week: "Semana 3", value: -0.1 },
-          { week: "Semana 4", value: 0 },
-          { week: "Semana 5", value: 0.1 },
-          { week: "Semana 6", value: 0 },
-        ];
-    }
-  };
-
-  const data = getData();
+  // define range do eixo Y com base nos valores
+  const values = data.map((d) => d.peso);
+  const min = Math.min(...values) - 1;
+  const max = Math.max(...values) + 1;
 
   return (
     <div className="w-full h-60 py-4">
@@ -63,21 +61,23 @@ export default function WeightProgressChart({
             axisLine={false}
           />
           <YAxis
+            domain={[min, max]}
             tick={{ fontSize: 12, fill: "#8A8A8A" }}
             tickLine={false}
             axisLine={false}
-            width={30}
+            width={35}
           />
           <Tooltip
+            formatter={(value) => [`${value} kg`, "Peso"]}
             contentStyle={{
-              borderRadius: "10px",
+              borderRadius: 10,
               border: "none",
               boxShadow: "0px 4px 12px rgba(0,0,0,0.1)",
             }}
           />
           <Line
             type="monotone"
-            dataKey="value"
+            dataKey="peso"
             stroke="#00C974"
             strokeWidth={4}
             dot={{ r: 4, fill: "#00C974" }}

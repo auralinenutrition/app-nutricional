@@ -5,11 +5,12 @@ import AInput from "@/components/ui/AInput";
 import AButton from "@/components/ui/AButton";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/lib/supabase";
+import { createBrowserSupabase } from "@/lib/supabase/browser";
 
 export default function Login() {
-  const { user, signIn } = useAuth();
+  const { signIn } = useAuth();
   const router = useRouter();
+  const supabase = createBrowserSupabase();
 
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
@@ -19,27 +20,27 @@ export default function Login() {
     try {
       setLoading(true);
 
-      // 1) autenticar
+      // 1) Autentica no Supabase
       await signIn(email, senha);
 
-      // 2) recuperar usuário logado
-      const { data: sessionData } = await supabase.auth.getSession();
-      const userId = sessionData.session?.user?.id;
+      // 2) NÃO pegar sessão aqui — ela ainda não existe imediatamente.
+      // O AuthContext vai atualizar automaticamente.
 
-      if (!userId) {
-        throw new Error("Não foi possível identificar o usuário logado.");
+      // 3) Atualizar last_login no backend (agora autenticado)
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user?.id) {
+        await supabase
+          .from("users")
+          .update({ last_login: new Date().toISOString() })
+          .eq("id", user.id);
       }
 
-      // 3) atualizar last_login
-      await supabase
-        .from("users")
-        .update({
-          last_login: new Date().toISOString(),
-        })
-        .eq("id", userId);
-
-      // 4) redirecionar
+      // 4) Redireciona
       router.push("/home");
+
     } catch (err: any) {
       alert(err.message);
     } finally {

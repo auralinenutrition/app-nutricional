@@ -3,16 +3,13 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { useAuth } from "@/contexts/AuthContext";
 
 import AInput from "@/components/ui/AInput";
 import AButton from "@/components/ui/AButton";
+import { finishQuizAfterSignup } from "@/services/quiz/finishQuizAfterSignup";
 
-import quizService from "@/services/quizService";
-
-export default function Signup() {
+export default function SignupPage() {
   const router = useRouter();
-  const { signUp: signUpCtx } = useAuth(); // NÃO usar para criar conta
 
   const [nome, setNome] = useState("");
   const [email, setEmail] = useState("");
@@ -23,92 +20,47 @@ export default function Signup() {
     try {
       setLoading(true);
 
-      // 1) CRIAR USUÁRIO NO AUTH
+      // 1) Criar usuário no Supabase Auth
       const { data, error } = await supabase.auth.signUp({
         email,
         password: senha,
-        options: {
-          emailRedirectTo: `${location.origin}/home`,
-        },
       });
 
       if (error) throw error;
 
-      // ID retornado pelo Supabase
-      let userId: string | undefined = data.user?.id;
+      const userId = data.user?.id;
+      if (!userId) throw new Error("Erro ao localizar usuário.");
 
-      if (!userId) {
-        const session = await supabase.auth.getSession();
-        userId = session.data.session?.user?.id ?? undefined;
-
-        if (!userId) throw new Error("ID do usuário não encontrado.");
-      }
-
-      // 2) DEFINIR PLANO
-      const planoSelecionado =
+      // 2) Pegar plano selecionado
+      const plano =
         new URLSearchParams(window.location.search).get("plano") ?? "free";
 
-      // 3) INSERIR USUÁRIO NA TABELA users
-      const { error: insertUserError } = await supabase.from("users").insert({
-        id: userId,
-        name: nome,
-        email: email,
-        plan: planoSelecionado,
-        onboarding_done: true,
+      // 3) Criar user no banco usando service role
+      const res = await fetch("/api/users/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, name: nome, email, plan: plano }),
       });
 
-      if (insertUserError) throw insertUserError;
-
-      // 4) LER QUIZ DO LOCALSTORAGE
-      const quizDataRaw = localStorage.getItem("quizData");
-      if (!quizDataRaw) {
-        router.push("/home");
-        return;
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || "Erro ao salvar usuário no banco.");
       }
 
-      const quizData = JSON.parse(quizDataRaw);
+      // 4) Salvar quiz
+      await finishQuizAfterSignup(userId);
 
-      const payload = {
-        ...quizData,
-        peso_atual: Number(quizData.peso_atual),
-        altura: Number(quizData.altura),
-        peso_desejado: Number(quizData.peso_desejado),
-        dia_nascimento: String(quizData.dia_nascimento),
-        mes_nascimento: String(quizData.mes_nascimento),
-        ano_nascimento: String(quizData.ano_nascimento),
-      };
+      const planResp = await fetch("/api/ai/generate-plan", { method: "POST" });
 
-      // 5) SALVAR QUIZ
-      const saveRes = await quizService.saveQuizResponses(userId, payload);
+    if (!planResp.ok) {
+      console.error("Falha ao gerar plano", await planResp.text());
+    }
 
-      if (!saveRes.success) {
-        await supabase.from("quiz_responses").insert({
-          user_id: userId,
-          ...payload,
-          created_at: new Date().toISOString(),
-        });
-      }
-
-      // 6) ATUALIZAR USER COM CAMPOS DO QUIZ
-      await supabase
-        .from("users")
-        .update({
-          peso_atual: payload.peso_atual,
-          peso_inicial: payload.peso_atual,
-          peso_desejado: payload.peso_desejado,
-          altura: payload.altura,
-          objetivo: payload.objetivo,
-          nivel_treino: payload.nivel_treino,
-          frequencia_semanal: payload.frequencia_treino,
-        })
-        .eq("id", userId);
-
-      // 7) LIMPAR E IR PARA HOME
+      // 5) Limpar
       localStorage.removeItem("quizData");
       localStorage.removeItem("quiz_completed");
 
-      await new Promise((res) => setTimeout(res, 200));
-
+      // 6) Redirecionar
       router.push("/home");
     } catch (err: any) {
       console.error(err);
@@ -153,16 +105,6 @@ export default function Signup() {
           <AButton type="button" onClick={handleSignup}>
             {loading ? "Criando conta..." : "Criar conta"}
           </AButton>
-
-          <p className="text-center text-sm mt-2 text-[#6F6F6F]">
-            Já tem conta?{" "}
-            <span
-              onClick={() => router.push("/login")}
-              className="text-[#00C974] font-semibold cursor-pointer"
-            >
-              Entrar
-            </span>
-          </p>
         </div>
       </div>
     </div>

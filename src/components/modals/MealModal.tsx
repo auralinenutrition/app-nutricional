@@ -2,18 +2,18 @@
 
 import { useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { uploadMealPhoto } from "@/services/meals/uploadMealPhoto";
 import { useAuth } from "@/contexts/AuthContext";
 import { inferMealType, mapTypeToTitle } from "@/lib/meals";
+import { uploadMealPhoto } from "@/services/meals/uploadMealPhoto";
 
-type Props = {
+interface MealModalProps {
   open: boolean;
   onClose: () => void;
-  onSaved: (data: any) => void;
-};
+  onSaved: (saved: any) => void; // Replace 'any' with a more specific type if available
+}
 
-export default function MealModal({ open, onClose, onSaved }: Props) {
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+export default function MealModal({ open, onClose, onSaved }: MealModalProps) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -33,24 +33,18 @@ export default function MealModal({ open, onClose, onSaved }: Props) {
 
     setLoading(true);
 
-    // 1 — Upload
-    const { publicUrl } = await uploadMealPhoto(user.id, file);
-    console.log("📸 Foto enviada:", publicUrl);
+    const uploadRes = await uploadMealPhoto(file);
+    const publicUrl = uploadRes.publicUrl;
 
-    // 2 — IA
     const nutritionalData = await fetch("/api/meals/analyze", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ imageUrl: publicUrl }),
     }).then((r) => r.json());
 
-    console.log("🤖 IA:", nutritionalData);
-
-    // 3 — TYPE
     const type = inferMealType(new Date());
     const title = mapTypeToTitle(type);
 
-    // 4 — payload final
     const mealBody = {
       type,
       title,
@@ -63,21 +57,14 @@ export default function MealModal({ open, onClose, onSaved }: Props) {
       portion_size: nutritionalData.portion_size ?? "",
     };
 
-    // 5 — salvar no BD
     const saved = await fetch("/api/meals/create", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(mealBody),
     }).then((r) => r.json());
 
-    console.log("📦 Salvo:", saved);
-
     setLoading(false);
-
-    // 6 — evento para Home
     window.dispatchEvent(new Event("mealSaved"));
-
-    // 7 — fechar modal
     onSaved(saved);
     onClose();
   }
@@ -98,11 +85,8 @@ export default function MealModal({ open, onClose, onSaved }: Props) {
           exit={{ y: 40, opacity: 0 }}
           className="bg-white w-full p-5 rounded-t-3xl shadow-xl"
         >
-          <h2 className="text-lg font-semibold text-[#0A0A0A] mb-4">
-            Registrar refeição
-          </h2>
+          <h2 className="text-lg font-semibold mb-4">Registrar refeição</h2>
 
-          {/* Input oculto */}
           <input
             type="file"
             accept="image/*"
@@ -111,24 +95,21 @@ export default function MealModal({ open, onClose, onSaved }: Props) {
             onChange={handleSelectFile}
           />
 
-          {!preview && (
+          {!preview ? (
             <button
               onClick={() => fileInputRef.current?.click()}
               className="w-full py-3 rounded-xl bg-[#00C974] text-white font-medium"
             >
               Selecionar foto
             </button>
-          )}
-
-          {preview && (
-            <div className="flex flex-col gap-4">
+          ) : (
+            <>
               <img
                 src={preview}
                 className="w-full rounded-xl object-cover max-h-80"
-                alt="preview"
               />
 
-              <div className="flex gap-3">
+              <div className="flex gap-3 mt-4">
                 <button
                   className="flex-1 py-3 rounded-xl bg-gray-200 text-gray-700"
                   onClick={() => {
@@ -147,7 +128,7 @@ export default function MealModal({ open, onClose, onSaved }: Props) {
                   {loading ? "Processando..." : "Confirmar"}
                 </button>
               </div>
-            </div>
+            </>
           )}
 
           <button

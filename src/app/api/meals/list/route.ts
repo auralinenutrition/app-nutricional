@@ -1,18 +1,18 @@
-import { createClient } from "@/lib/supabase/client";
+// src/app/api/meals/list/route.ts
 import { NextResponse } from "next/server";
+import { createServerSupabase } from "@/lib/supabase/server";
 
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createServerSupabase();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Buscar apenas refeições do dia atual
   const startOfDay = new Date();
   startOfDay.setHours(0, 0, 0, 0);
 

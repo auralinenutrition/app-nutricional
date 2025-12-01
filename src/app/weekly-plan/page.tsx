@@ -1,38 +1,41 @@
-"use client";
+// src/app/weekly-plan/page.tsx
+import loadHomeServer from "@/services/home/loadHomeServer";
+import WeeklyPlanClient from "./WeeklyPlanClient";
+import { getUserServer } from "@/lib/supabase/getUserServer";
+import { redirect } from "next/navigation";import { AiDayMeal, AiPlanDays, DayKey } from "@/types/plan";
+;
 
-import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
-import WeeklyPlanHeader from "@/components/weekly/WeeklyPlanHeader";
-import WeeklyPlanList from "@/components/weekly/WeeklyPlanList";
-import BottomBar from "@/components/home/BottomBar";
-import loadWeeklyPlan from "@/services/home/loadWeeklyPlan";
+export default async function WeeklyPlanPage() {
+  const { user } = await getUserServer();
+  if (!user) redirect("/login");
 
-export default function WeeklyPlanPage() {
-  const [plan, setPlan] = useState<any>(null);
-  const [totals, setTotals] = useState<Record<string, number> | null>(null);
-  const [loading, setLoading] = useState(true);
+  const data = await loadHomeServer(user.id);
 
-  useEffect(() => {
-    async function load() {
-      const { data } = await supabase.auth.getUser();
-      if (!data?.user) return;
+  // ordered days so client shows consistent order
+  const orderedDays: DayKey[] = [
+    "domingo",
+    "segunda",
+    "terca",
+    "quarta",
+    "quinta",
+    "sexta",
+    "sabado",
+  ];
 
-      const weekly = await loadWeeklyPlan(data.user.id);
-      setPlan(weekly.days);
-      setTotals(weekly.totals);
-      setLoading(false);
+  const convertPlan = (plan: any): AiPlanDays => {
+    const converted: Partial<AiPlanDays> = {};
+    for (const d of orderedDays) {
+      const arr = (plan?.[d] ?? []) as any[];
+      converted[d] = arr.map((m: any) => ({
+        title: String(m.title ?? ""),
+        description: m.description ?? "",
+        calories: m.calories == null ? null : Number(m.calories),
+      })) as AiDayMeal[];
     }
-    load();
-  }, []);
+    return converted as AiPlanDays;
+  };
 
-  if (loading || !plan)
-    return <div className="p-6 text-gray-500">Carregando plano...</div>;
+  const validatedPlan = convertPlan(data?.plan ?? {});
 
-  return (
-    <div className="pb-24 pt-6 px-3">
-      <WeeklyPlanHeader />
-      <WeeklyPlanList plan={plan} totals={totals} />
-      <BottomBar />
-    </div>
-  );
+  return <WeeklyPlanClient plan={validatedPlan} shoppingList={data?.shoppingList ?? []} totals={data?.totals ?? {}} />;
 }

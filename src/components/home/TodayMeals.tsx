@@ -1,3 +1,4 @@
+// src/components/home/TodayMeals.tsx
 import { ChevronRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -11,7 +12,7 @@ type TodayMealsProps = {
   meals: Meal[];
 };
 
-export default function TodayMeals({ meals } : TodayMealsProps) {
+export default function TodayMeals({ meals }: TodayMealsProps) {
   const router = useRouter();
   const today = new Date().toLocaleDateString("pt-BR");
 
@@ -40,7 +41,9 @@ export default function TodayMeals({ meals } : TodayMealsProps) {
           {meals.map((meal, i) => (
             <div key={i} className="mb-4">
               <p className="font-medium">{meal.title}</p>
-              <p className="text-sm text-gray-500">{meal.calories} kcal</p>
+              {meal.calories !== undefined && (
+                <p className="text-sm text-gray-500">{meal.calories} kcal</p>
+              )}
             </div>
           ))}
         </div>

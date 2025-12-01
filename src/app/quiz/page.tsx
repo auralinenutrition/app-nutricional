@@ -1,17 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChevronLeft } from "lucide-react";
 
 import ScrollWheelPicker from "@/components/scrollWhellPicker/ScrollWhellPicker";
 import ScrollWheelPickerDate from "@/components/scrollWhellPicker/ScrollWheelDatePicker";
-import MotivationalModal from "@/components/motivation/MotivationModel";
-
-import { useAuth } from "@/contexts/AuthContext";
-import quizService from "@/services/quizService";
 
 // ======================================
 // TIPAGEM DO QUIZ
@@ -45,8 +41,8 @@ type QuizData = {
 
 export default function QuizPage() {
   const router = useRouter();
-  const { user } = useAuth();
-  const totalSteps = 22;
+  const searchParams = useSearchParams();
+  const totalSteps = 21;
 
   const [step, setStep] = useState(1);
 
@@ -85,6 +81,23 @@ export default function QuizPage() {
   const [mes, setMes] = useState("Janeiro");
   const [ano, setAno] = useState(2000);
 
+  // ---------------------------
+  // CARREGAR LOCALSTORAGE UMA ÚNICA VEZ
+  // ---------------------------
+  useEffect(() => {
+    const saved = localStorage.getItem("quizData");
+    if (saved) {
+      setQuizData((prev) => ({ ...prev, ...JSON.parse(saved) }));
+    }
+  }, []);
+
+  // ---------------------------
+  // FUNÇÃO SEGURA DE SALVAR
+  // ---------------------------
+  const saveLocal = (data: any) => {
+    localStorage.setItem("quizData", JSON.stringify(data));
+  };
+
   const gerarArrayPeso = () => Array.from({ length: 171 }, (_, i) => 30 + i);
   const gerarArrayAltura = () => Array.from({ length: 121 }, (_, i) => 100 + i);
 
@@ -105,52 +118,84 @@ export default function QuizPage() {
   ];
   const anos = Array.from({ length: 100 }, (_, i) => 2024 - i);
 
-  const [showMetaModal, setShowMetaModal] = useState(false);
-  const [showProgressModal, setShowProgressModal] = useState(false);
-  const [showAlmostThereModal, setShowAlmostThereModal] = useState(false);
+  // ---------------------------
+  // LER STEP DA URL
+  // ---------------------------
+  useEffect(() => {
+    const s = searchParams.get("step");
+    if (s) {
+      const n = Number(s);
+      if (!Number.isNaN(n) && n >= 1 && n <= totalSteps) setStep(n);
+    }
+  }, [searchParams]);
 
   const handleNext = () => {
-    if (step === 4) setQuizData({ ...quizData, peso_atual: `${pesoAtual}` });
-    if (step === 5) setQuizData({ ...quizData, altura: `${altura}` });
+    // STEP 5 — PESO ATUAL
+    if (step === 5) {
+      const updated = { ...quizData, peso_atual: String(pesoAtual) };
+      setQuizData(updated);
+      saveLocal(updated);
+    }
 
+    // STEP 6 — ALTURA
     if (step === 6) {
-      setQuizData({ ...quizData, peso_desejado: `${pesoDesejado}` });
-      setShowMetaModal(true);
-      return;
+      const updated = { ...quizData, altura: String(altura) };
+      setQuizData(updated);
+      saveLocal(updated);
     }
 
+    // STEP 7 — PESO DESEJADO → motivacional 1
     if (step === 7) {
-      setQuizData({
-        ...quizData,
-        dia_nascimento: `${dia}`,
-        mes_nascimento: mes,
-        ano_nascimento: `${ano}`,
-      });
+      const updated = { ...quizData, peso_desejado: String(pesoDesejado) };
+      setQuizData(updated);
+      saveLocal(updated);
+      router.push(`/quiz/motivation/1?from=7&next=8`);
+      return;
     }
 
+    // STEP 11 → motivacional 2
     if (step === 11) {
-      setShowProgressModal(true);
+      saveLocal(quizData);
+      router.push(`/quiz/motivation/2?from=11&next=12`);
       return;
     }
 
-    if (step === totalSteps - 1) {
-      setShowAlmostThereModal(true);
+    // STEP 19 → motivacional 3
+    if (step === 19) {
+      saveLocal(quizData);
+      router.push(`/quiz/motivation/3?from=19&next=20`);
       return;
     }
 
-    if (step < totalSteps) {
-      setStep(step + 1);
+    // STEP 21 → motivacional 4
+    if (step === 21) {
+      saveLocal(quizData);
+      router.push(`/quiz/motivation/4?from=21`);
       return;
     }
 
-    localStorage.setItem("quiz_completed", "true");
-    localStorage.setItem("quizData", JSON.stringify(quizData));
-    router.push("/quiz-result");
+    // continuar
+    router.push(`/quiz?step=${step + 1}`);
+    setStep(step + 1);
   };
 
+  // ---------------------------
+  // VOLTAR
+  // ---------------------------
   const handleBack = () => {
-    if (step > 1) setStep(step - 1);
-    else router.push("/");
+    const from = searchParams.get("from");
+
+    if (from) {
+      router.push(`/quiz?step=${from}`);
+      return;
+    }
+
+    if (step > 1) {
+      router.push(`/quiz?step=${step - 1}`);
+      setStep(step - 1);
+    } else {
+      router.push("/");
+    }
   };
 
   const progress = (step / totalSteps) * 100;
@@ -259,33 +304,32 @@ export default function QuizPage() {
           </div>
         );
 
+      // ------------------------
+      // STEP 4 — GÊNERO
+      // ------------------------
+      case 4:
+        return (
+          <div className="space-y-10">
+            <h2 className="text-2xl font-bold">Qual é o seu gênero?</h2>
+            <p className="text-[#6F6F6F]">Escolha uma opção</p>
 
-// ------------------------
-// STEP 4 — GÊNERO
-// ------------------------
-case 4:
-  return (
-    <div className="space-y-10">
-      <h2 className="text-2xl font-bold">Qual é o seu gênero?</h2>
-      <p className="text-[#6F6F6F]">Escolha uma opção</p>
-
-      <div className="space-y-3">
-        {["Masculino", "Feminino"].map((opt) => (
-          <button
-            key={opt}
-            onClick={() => setQuizData({ ...quizData, genero: opt })}
-            className={`w-full h-14 px-6 rounded-xl border-2 ${
-              quizData.genero === opt
-                ? "border-[#00C974]"
-                : "border-gray-200"
-            }`}
-          >
-            {opt}
-          </button>
-        ))}
-      </div>
-    </div>
-  );
+            <div className="space-y-3">
+              {["Masculino", "Feminino", "Outro"].map((opt) => (
+                <button
+                  key={opt}
+                  onClick={() => setQuizData({ ...quizData, genero: opt })}
+                  className={`w-full h-14 px-6 rounded-xl border-2 ${
+                    quizData.genero === opt
+                      ? "border-[#00C974]"
+                      : "border-gray-200"
+                  }`}
+                >
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+        );
 
       // ------------------------
       // STEP 5 — PESO ATUAL
@@ -871,17 +915,6 @@ case 4:
             </div>
           </div>
         );
-      // ------------------------
-      // STEP 22 — FINAL
-      // ------------------------
-      case 22:
-        return (
-          <div className="text-center space-y-6">
-            <h2 className="text-3xl font-bold">Tudo pronto!</h2>
-            <p className="text-[#6F6F6F]">Clique em finalizar para avançar.</p>
-            <div className="text-6xl">🎉</div>
-          </div>
-        );
 
       default:
         return <h2>Passo {step} não configurado.</h2>;
@@ -890,16 +923,12 @@ case 4:
   return (
     <div className="min-h-screen bg-white">
       <div className="max-w-2xl mx-auto px-6 py-8">
-        {/* HEADER */}
+        {/* HEADER SEM contagem */}
         <div className="mb-8">
-          <div className="flex justify-between items-center">
+          <div className="flex justify-start items-center">
             <Button onClick={handleBack} variant="ghost" className="p-2">
               <ChevronLeft className="w-6 h-6" />
             </Button>
-
-            <span className="text-sm text-gray-600">
-              {step} de {totalSteps}
-            </span>
           </div>
 
           <div className="w-full h-2 bg-gray-200 rounded-full mt-4">
@@ -910,50 +939,10 @@ case 4:
           </div>
         </div>
 
+        {/* ⬇ RENDERIZA A PERGUNTA ATUAL */}
         {renderQuestion()}
 
-        {/* Gatilho 1 */}
-        <MotivationalModal
-          open={showMetaModal}
-          title="🎯 Sua meta é totalmente possível!"
-          subtitle="Com consistência e o plano certo, você chega lá."
-          primaryLabel="Ver projeção"
-          onPrimary={() => {
-            setShowMetaModal(false);
-            setTimeout(() => setStep(step + 1), 150);
-          }}
-          onClose={() => setShowMetaModal(false)}
-        />
-
-        {/* Gatilho 2 */}
-        <MotivationalModal
-          open={showProgressModal}
-          title="📉 Olha sua evolução!"
-          subtitle="Pequenos passos somam grandes resultados."
-          primaryLabel="Continuar"
-          onPrimary={() => {
-            setShowProgressModal(false);
-            setStep(step + 1);
-          }}
-          onClose={() => setShowProgressModal(false)}
-        />
-
-        {/* Gatilho 3 */}
-        <MotivationalModal
-          open={showAlmostThereModal}
-          title="💪 Você está MUITO perto!"
-          subtitle="Continue para ver seu plano totalmente personalizado."
-          primaryLabel="Ver meu plano"
-          onPrimary={() => {
-            setShowAlmostThereModal(false);
-            localStorage.setItem("quizData", JSON.stringify(quizData));
-            localStorage.setItem("quiz_completed", "true");
-            router.push("/quiz-result");
-          }}
-          onClose={() => setShowAlmostThereModal(false)}
-        />
-
-        {/* BOTÃO FINAL */}
+        {/* CONTINUAR */}
         <Button
           onClick={handleNext}
           className="w-full h-14 mt-10 rounded-full bg-[#00C974] hover:bg-[#00B368] text-white text-lg"

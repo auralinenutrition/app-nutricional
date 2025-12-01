@@ -104,96 +104,33 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$
 "use client";
 ;
 ;
+/**
+ * Gera projeção linear de peso para 6 semanas.
+ * Exemplo:
+ * - Atual: 70
+ * - Desejado: 80
+ * => Sobe 10kg em 6 semanas → +1.66kg/semana
+ */ function gerarProjecaoSemanal(pesoAtual, pesoDesejado) {
+    const semanas = 6;
+    const diffTotal = pesoDesejado - pesoAtual;
+    const passo = diffTotal / semanas;
+    const arr = [];
+    for(let i = 0; i <= semanas; i++){
+        const peso = Number((pesoAtual + passo * i).toFixed(1));
+        arr.push({
+            week: "Semana ".concat(i + 1),
+            peso
+        });
+    }
+    return arr;
+}
 function WeightProgressChart(param) {
-    let { objetivo } = param;
-    // Gera o gráfico baseado no objetivo
-    const getData = ()=>{
-        switch(objetivo){
-            case "Perder peso":
-                return [
-                    {
-                        week: "Semana 1",
-                        value: 0
-                    },
-                    {
-                        week: "Semana 2",
-                        value: -0.8
-                    },
-                    {
-                        week: "Semana 3",
-                        value: -1.3
-                    },
-                    {
-                        week: "Semana 4",
-                        value: -2.0
-                    },
-                    {
-                        week: "Semana 5",
-                        value: -2.7
-                    },
-                    {
-                        week: "Semana 6",
-                        value: -3.2
-                    }
-                ];
-            case "Ganhar massa muscular":
-                return [
-                    {
-                        week: "Semana 1",
-                        value: 0
-                    },
-                    {
-                        week: "Semana 2",
-                        value: +0.4
-                    },
-                    {
-                        week: "Semana 3",
-                        value: +0.9
-                    },
-                    {
-                        week: "Semana 4",
-                        value: +1.4
-                    },
-                    {
-                        week: "Semana 5",
-                        value: +1.8
-                    },
-                    {
-                        week: "Semana 6",
-                        value: +2.2
-                    }
-                ];
-            default:
-                // manter peso
-                return [
-                    {
-                        week: "Semana 1",
-                        value: 0
-                    },
-                    {
-                        week: "Semana 2",
-                        value: 0.1
-                    },
-                    {
-                        week: "Semana 3",
-                        value: -0.1
-                    },
-                    {
-                        week: "Semana 4",
-                        value: 0
-                    },
-                    {
-                        week: "Semana 5",
-                        value: 0.1
-                    },
-                    {
-                        week: "Semana 6",
-                        value: 0
-                    }
-                ];
-        }
-    };
-    const data = getData();
+    let { pesoAtual, pesoDesejado } = param;
+    const data = gerarProjecaoSemanal(pesoAtual, pesoDesejado);
+    // define range do eixo Y com base nos valores
+    const values = data.map((d)=>d.peso);
+    const min = Math.min(...values) - 1;
+    const max = Math.max(...values) + 1;
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
         className: "w-full h-60 py-4",
         children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$ResponsiveContainer$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["ResponsiveContainer"], {
@@ -212,36 +149,44 @@ function WeightProgressChart(param) {
                         axisLine: false
                     }, void 0, false, {
                         fileName: "[project]/src/components/motivation/WeightProgressChart.tsx",
-                        lineNumber: 59,
+                        lineNumber: 57,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$YAxis$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["YAxis"], {
+                        domain: [
+                            min,
+                            max
+                        ],
                         tick: {
                             fontSize: 12,
                             fill: "#8A8A8A"
                         },
                         tickLine: false,
                         axisLine: false,
-                        width: 30
+                        width: 35
                     }, void 0, false, {
                         fileName: "[project]/src/components/motivation/WeightProgressChart.tsx",
-                        lineNumber: 65,
+                        lineNumber: 63,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$component$2f$Tooltip$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Tooltip"], {
+                        formatter: (value)=>[
+                                "".concat(value, " kg"),
+                                "Peso"
+                            ],
                         contentStyle: {
-                            borderRadius: "10px",
+                            borderRadius: 10,
                             border: "none",
                             boxShadow: "0px 4px 12px rgba(0,0,0,0.1)"
                         }
                     }, void 0, false, {
                         fileName: "[project]/src/components/motivation/WeightProgressChart.tsx",
-                        lineNumber: 71,
+                        lineNumber: 70,
                         columnNumber: 11
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$recharts$2f$es6$2f$cartesian$2f$Line$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Line"], {
                         type: "monotone",
-                        dataKey: "value",
+                        dataKey: "peso",
                         stroke: "#00C974",
                         strokeWidth: 4,
                         dot: {
@@ -260,17 +205,17 @@ function WeightProgressChart(param) {
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/motivation/WeightProgressChart.tsx",
-                lineNumber: 58,
+                lineNumber: 56,
                 columnNumber: 9
             }, this)
         }, void 0, false, {
             fileName: "[project]/src/components/motivation/WeightProgressChart.tsx",
-            lineNumber: 57,
+            lineNumber: 55,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/components/motivation/WeightProgressChart.tsx",
-        lineNumber: 56,
+        lineNumber: 54,
         columnNumber: 5
     }, this);
 }
@@ -294,9 +239,11 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/ui/button.tsx [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/navigation.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$motivation$2f$WeightProgressChart$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/motivation/WeightProgressChart.tsx [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/arrow-right.js [app-client] (ecmascript) <export default as ArrowRight>");
 ;
 var _s = __turbopack_context__.k.signature();
 "use client";
+;
 ;
 ;
 ;
@@ -305,13 +252,10 @@ function QuizResultPage() {
     _s();
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"])();
     const [quizData, setQuizData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
-    // Carrega dados do quiz
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "QuizResultPage.useEffect": ()=>{
             const saved = localStorage.getItem("quizData");
-            if (saved) {
-                setQuizData(JSON.parse(saved));
-            }
+            if (saved) setQuizData(JSON.parse(saved));
         }
     }["QuizResultPage.useEffect"], []);
     if (!quizData) return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -319,56 +263,55 @@ function QuizResultPage() {
         children: "Carregando..."
     }, void 0, false, {
         fileName: "[project]/src/app/quiz-result/page.tsx",
-        lineNumber: 22,
+        lineNumber: 20,
         columnNumber: 7
     }, this);
-    // Cálculos motivacionais
     const pesoAtual = Number(quizData.peso_atual);
     const pesoDesejado = Number(quizData.peso_desejado);
     const diferenca = pesoDesejado - pesoAtual;
     const tendencia = diferenca < 0 ? "perder" : "ganhar";
     const valorAbs = Math.abs(diferenca);
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "min-h-screen bg-white px-6 py-10 max-w-2xl mx-auto",
+        className: "min-h-screen bg-white px-6 py-10 max-w-xl mx-auto",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "text-center space-y-2",
+                className: "text-center space-y-3 mb-8",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                        className: "text-3xl font-bold text-[#0A0A0A]",
+                        className: "text-3xl font-extrabold text-[#0A0A0A]",
                         children: "Seu plano está pronto! 💪"
                     }, void 0, false, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 39,
+                        lineNumber: 36,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-[#6F6F6F] text-lg",
-                        children: "Criamos um plano 100% personalizado com base nas suas respostas."
+                        className: "text-[#6F6F6F] text-base leading-relaxed",
+                        children: "Criamos um plano totalmente personalizado para atingir seu objetivo **real**, considerando seu peso, rotina, nível de disciplina e estilo de vida."
                     }, void 0, false, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 43,
+                        lineNumber: 39,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/quiz-result/page.tsx",
-                lineNumber: 38,
+                lineNumber: 35,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "mt-10 bg-[#F8F8F8] p-6 rounded-2xl shadow-sm",
+                className: "bg-[#F8F8F8] p-6 rounded-2xl shadow-sm mb-10",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                        className: "text-xl font-semibold text-[#0A0A0A] mb-4",
-                        children: "Evolução projetada"
+                        className: "text-xl font-semibold text-[#0A0A0A] mb-6",
+                        children: "Sua evolução projetada"
                     }, void 0, false, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 50,
+                        lineNumber: 47,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex justify-around items-center py-4",
+                        className: "flex justify-around items-center",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "text-center",
@@ -378,32 +321,32 @@ function QuizResultPage() {
                                         children: "Peso atual"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                                        lineNumber: 56,
+                                        lineNumber: 53,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "text-3xl font-bold text-[#0A0A0A]",
+                                        className: "text-4xl font-bold",
                                         children: [
                                             pesoAtual,
                                             "kg"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                                        lineNumber: 57,
+                                        lineNumber: 54,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/quiz-result/page.tsx",
-                                lineNumber: 55,
+                                lineNumber: 52,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                className: "text-5xl",
+                                className: "text-5xl text-gray-500",
                                 children: "→"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/quiz-result/page.tsx",
-                                lineNumber: 60,
+                                lineNumber: 57,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -411,40 +354,46 @@ function QuizResultPage() {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                         className: "text-sm text-[#6F6F6F]",
-                                        children: "Peso ideal"
+                                        children: "Peso desejado"
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                                        lineNumber: 63,
+                                        lineNumber: 60,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                        className: "text-3xl font-bold text-[#00C974]",
+                                        className: "text-4xl font-extrabold text-[#00C974]",
                                         children: [
                                             pesoDesejado,
                                             "kg"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                                        lineNumber: 64,
+                                        lineNumber: 61,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/quiz-result/page.tsx",
-                                lineNumber: 62,
+                                lineNumber: 59,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 54,
+                        lineNumber: 51,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-center text-[#6F6F6F] text-sm mt-2",
+                        className: "text-center text-[#434343] text-sm mt-4",
                         children: [
                             "Você precisa ",
-                            tendencia,
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                children: tendencia
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/quiz-result/page.tsx",
+                                lineNumber: 68,
+                                columnNumber: 24
+                            }, this),
                             " ",
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                 className: "font-semibold text-[#0A0A0A]",
@@ -454,133 +403,142 @@ function QuizResultPage() {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/app/quiz-result/page.tsx",
-                                lineNumber: 72,
+                                lineNumber: 69,
                                 columnNumber: 11
-                            }, this),
-                            diferenca === 0 && " — você já está no seu peso ideal!"
+                            }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 70,
+                        lineNumber: 67,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/quiz-result/page.tsx",
-                lineNumber: 49,
+                lineNumber: 46,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "w-full rounded-2xl p-6 mt-10",
+                className: "rounded-2xl p-6 border border-[#F0F0F0] bg-white",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                         className: "text-center text-lg font-semibold mb-4 text-[#0A0A0A]",
-                        children: "Seu progresso nas próximas semanas"
+                        children: "Como será seu progresso nas próximas semanas"
                     }, void 0, false, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 81,
+                        lineNumber: 75,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$motivation$2f$WeightProgressChart$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                        objetivo: quizData.objetivo
+                        pesoAtual: pesoAtual,
+                        pesoDesejado: pesoDesejado
                     }, void 0, false, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 85,
+                        lineNumber: 79,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-center text-sm text-[#3D3D3D] mt-4",
-                        children: "Projeção baseada em milhares de usuários reais"
+                        className: "text-center text-xs text-[#3D3D3D] mt-4 italic",
+                        children: "*Projeção baseada em padrões reais de evolução de milhares de usuários."
                     }, void 0, false, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 87,
+                        lineNumber: 84,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/quiz-result/page.tsx",
-                lineNumber: 78,
+                lineNumber: 74,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "mt-10 text-center space-y-4",
+                className: "mt-12 space-y-6 text-center",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                         className: "text-2xl font-bold text-[#0A0A0A]",
-                        children: "Seu objetivo é totalmente possível 🎯"
+                        children: "Você está muito perto do seu novo corpo 🎯"
                     }, void 0, false, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 94,
+                        lineNumber: 91,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-[#6F6F6F] leading-relaxed",
-                        children: "Com consistência e o plano certo, você chega lá muito mais rápido do que imagina. Criamos recomendações feitas sob medida para sua rotina."
+                        className: "text-[#5A5A5A] leading-relaxed text-base",
+                        children: "Preparamos um plano completo com refeições, metas diárias, lista de compras e organização — tudo para você ganhar consistência sem precisar pensar ou montar nada sozinho."
                     }, void 0, false, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 98,
+                        lineNumber: 95,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
-                        className: "text-left space-y-2 text-[#0A0A0A] font-medium mt-4 max-w-md mx-auto",
+                        className: "text-left space-y-3 text-[#0A0A0A] font-medium bg-[#F7F7F7] p-5 rounded-2xl shadow-sm max-w-md mx-auto",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                                children: "✔️ Plano alimentar personalizado"
+                                children: "✔️ Metas alimentares personalizadas"
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/quiz-result/page.tsx",
+                                lineNumber: 102,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                                children: "✔️ Refeições feitas para o seu objetivo"
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/quiz-result/page.tsx",
+                                lineNumber: 103,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                                children: "✔️ Lista de compras automática"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/quiz-result/page.tsx",
                                 lineNumber: 104,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                                children: "✔️ Quantidade ideal de refeições por dia"
+                                children: "✔️ Estratégias para sua disciplina atual"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/quiz-result/page.tsx",
                                 lineNumber: 105,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                                children: "✔️ Adequado ao seu nível de disciplina"
+                                children: "✔️ Plano adaptado à sua rotina real"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/quiz-result/page.tsx",
                                 lineNumber: 106,
-                                columnNumber: 11
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                                children: "✔️ Ajustado ao seu horário mais difícil"
-                            }, void 0, false, {
-                                fileName: "[project]/src/app/quiz-result/page.tsx",
-                                lineNumber: 107,
-                                columnNumber: 11
-                            }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
-                                children: "✔️ Baseado em como você realmente vive"
-                            }, void 0, false, {
-                                fileName: "[project]/src/app/quiz-result/page.tsx",
-                                lineNumber: 108,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 103,
+                        lineNumber: 101,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/quiz-result/page.tsx",
-                lineNumber: 93,
+                lineNumber: 90,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "mt-12 text-center space-y-4",
+                className: "mt-12 space-y-5",
                 children: [
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Button"], {
                         onClick: ()=>router.push("/planos"),
-                        className: "w-full h-14 rounded-full bg-[#00C974] hover:bg-[#00B368] text-white text-lg",
-                        children: "Quero acessar meu plano agora"
-                    }, void 0, false, {
+                        className: "w-full h-16 rounded-full bg-[#00C974] hover:bg-[#00B368] text-white text-xl font-semibold flex items-center justify-center gap-2",
+                        children: [
+                            "Acessar meu plano completo",
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$right$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowRight$3e$__["ArrowRight"], {
+                                className: "w-5 h-5"
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/quiz-result/page.tsx",
+                                lineNumber: 117,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 114,
+                        lineNumber: 112,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -589,19 +547,19 @@ function QuizResultPage() {
                         children: "Refazer quiz"
                     }, void 0, false, {
                         fileName: "[project]/src/app/quiz-result/page.tsx",
-                        lineNumber: 121,
+                        lineNumber: 120,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/app/quiz-result/page.tsx",
-                lineNumber: 113,
+                lineNumber: 111,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/app/quiz-result/page.tsx",
-        lineNumber: 36,
+        lineNumber: 32,
         columnNumber: 5
     }, this);
 }

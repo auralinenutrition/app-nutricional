@@ -1,12 +1,19 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/meals/analyze/route": "app/api/meals/analyze/route.js",
-  "/api/meals/create/route": "app/api/meals/create/route.js",
+  "/api/ai/generate-plan/route": "app/api/ai/generate-plan/route.js",
+  "/api/users/create/route": "app/api/users/create/route.js",
   "/home/page": "app/home/page.js",
   "/icon.svg/route": "app/icon.svg/route.js",
   "/login/page": "app/login/page.js",
   "/page": "app/page.js",
-  "/profile/edit/page": "app/profile/edit/page.js",
+  "/planos/page": "app/planos/page.js",
   "/profile/page": "app/profile/page.js",
-  "/weekly-plan/page": "app/weekly-plan/page.js"
+  "/quiz-result/page": "app/quiz-result/page.js",
+  "/quiz/loading/page": "app/quiz/loading/page.js",
+  "/quiz/motivation/1/page": "app/quiz/motivation/1/page.js",
+  "/quiz/motivation/2/page": "app/quiz/motivation/2/page.js",
+  "/quiz/motivation/3/page": "app/quiz/motivation/3/page.js",
+  "/quiz/motivation/4/page": "app/quiz/motivation/4/page.js",
+  "/quiz/page": "app/quiz/page.js",
+  "/shopping/page": "app/shopping/page.js",
+  "/signup/page": "app/signup/page.js"
 }

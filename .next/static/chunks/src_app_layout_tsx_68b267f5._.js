@@ -7,8 +7,8 @@
   "static/chunks/node_modules_@supabase_auth-js_dist_module_6ccbf858._.js",
   "static/chunks/node_modules_motion-dom_dist_es_ed5d7820._.js",
   "static/chunks/node_modules_framer-motion_dist_es_02f1ea4e._.js",
-  "static/chunks/node_modules_59dc1f59._.js",
-  "static/chunks/src_10739d4c._.js"
+  "static/chunks/node_modules_631992c8._.js",
+  "static/chunks/src_a4c7a166._.js"
 ],
     source: "dynamic"
 });

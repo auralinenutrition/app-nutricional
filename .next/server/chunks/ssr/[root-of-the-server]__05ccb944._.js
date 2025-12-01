@@ -436,9 +436,11 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$scrollW
 ;
 function QuizPage() {
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
-    const totalSteps = 22;
+    const searchParams = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useSearchParams"])();
+    const totalSteps = 21;
     const [step, setStep] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(1);
     const [quizData, setQuizData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])({
+        genero: "",
         objetivo: "",
         nivel_treino: "",
         frequencia_treino: "",
@@ -463,13 +465,30 @@ function QuizPage() {
         alergias: [],
         outras_alergias: ""
     });
-    // Estados dos pickers
     const [pesoAtual, setPesoAtual] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(70);
     const [altura, setAltura] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(170);
     const [pesoDesejado, setPesoDesejado] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(65);
     const [dia, setDia] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(1);
     const [mes, setMes] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("Janeiro");
     const [ano, setAno] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(2000);
+    // ---------------------------
+    // CARREGAR LOCALSTORAGE UMA ÚNICA VEZ
+    // ---------------------------
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        const saved = localStorage.getItem("quizData");
+        if (saved) {
+            setQuizData((prev)=>({
+                    ...prev,
+                    ...JSON.parse(saved)
+                }));
+        }
+    }, []);
+    // ---------------------------
+    // FUNÇÃO SEGURA DE SALVAR
+    // ---------------------------
+    const saveLocal = (data)=>{
+        localStorage.setItem("quizData", JSON.stringify(data));
+    };
     const gerarArrayPeso = ()=>Array.from({
             length: 171
         }, (_, i)=>30 + i);
@@ -496,38 +515,92 @@ function QuizPage() {
     const anos = Array.from({
         length: 100
     }, (_, i)=>2024 - i);
+    // ---------------------------
+    // LER STEP DA URL
+    // ---------------------------
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        const s = searchParams.get("step");
+        if (s) {
+            const n = Number(s);
+            if (!Number.isNaN(n) && n >= 1 && n <= totalSteps) setStep(n);
+        }
+    }, [
+        searchParams
+    ]);
     const handleNext = ()=>{
-        // salvar valores dos pickers
-        if (step === 4) setQuizData({
-            ...quizData,
-            peso_atual: `${pesoAtual}`
-        });
-        if (step === 5) setQuizData({
-            ...quizData,
-            altura: `${altura}`
-        });
-        if (step === 6) setQuizData({
-            ...quizData,
-            peso_desejado: `${pesoDesejado}`
-        });
-        if (step === 7) setQuizData({
-            ...quizData,
-            dia_nascimento: `${dia}`,
-            mes_nascimento: mes,
-            ano_nascimento: `${ano}`
-        });
-        if (step < totalSteps) return setStep(step + 1);
-        // finalizar quiz
-        localStorage.setItem("quizData", JSON.stringify(quizData));
-        router.push("/quiz-result");
+        // STEP 5 — PESO ATUAL
+        if (step === 5) {
+            const updated = {
+                ...quizData,
+                peso_atual: String(pesoAtual)
+            };
+            setQuizData(updated);
+            saveLocal(updated);
+        }
+        // STEP 6 — ALTURA
+        if (step === 6) {
+            const updated = {
+                ...quizData,
+                altura: String(altura)
+            };
+            setQuizData(updated);
+            saveLocal(updated);
+        }
+        // STEP 7 — PESO DESEJADO → motivacional 1
+        if (step === 7) {
+            const updated = {
+                ...quizData,
+                peso_desejado: String(pesoDesejado)
+            };
+            setQuizData(updated);
+            saveLocal(updated);
+            router.push(`/quiz/motivation/1?from=7&next=8`);
+            return;
+        }
+        // STEP 11 → motivacional 2
+        if (step === 11) {
+            saveLocal(quizData);
+            router.push(`/quiz/motivation/2?from=11&next=12`);
+            return;
+        }
+        // STEP 19 → motivacional 3
+        if (step === 19) {
+            saveLocal(quizData);
+            router.push(`/quiz/motivation/3?from=19&next=20`);
+            return;
+        }
+        // STEP 21 → motivacional 4
+        if (step === 21) {
+            saveLocal(quizData);
+            router.push(`/quiz/motivation/4?from=21`);
+            return;
+        }
+        // continuar
+        router.push(`/quiz?step=${step + 1}`);
+        setStep(step + 1);
     };
+    // ---------------------------
+    // VOLTAR
+    // ---------------------------
     const handleBack = ()=>{
-        if (step > 1) setStep(step - 1);
-        else router.push("/");
+        const from = searchParams.get("from");
+        if (from) {
+            router.push(`/quiz?step=${from}`);
+            return;
+        }
+        if (step > 1) {
+            router.push(`/quiz?step=${step - 1}`);
+            setStep(step - 1);
+        } else {
+            router.push("/");
+        }
     };
     const progress = step / totalSteps * 100;
     const renderQuestion = ()=>{
         switch(step){
+            // ------------------------
+            // STEP 1 — OBJETIVO
+            // ------------------------
             case 1:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
@@ -537,7 +610,7 @@ function QuizPage() {
                             children: "Qual é seu objetivo principal?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 131,
+                            lineNumber: 211,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -545,7 +618,7 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 134,
+                            lineNumber: 214,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -560,42 +633,43 @@ function QuizPage() {
                                             ...quizData,
                                             objetivo: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition
-              ${quizData.objetivo === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
+                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.objetivo === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
                                     children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
                                         children: opt
                                     }, void 0, false, {
                                         fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 153,
+                                        lineNumber: 232,
                                         columnNumber: 19
                                     }, this)
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 143,
+                                    lineNumber: 223,
                                     columnNumber: 17
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 136,
+                            lineNumber: 216,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 130,
+                    lineNumber: 210,
                     columnNumber: 11
                 }, this);
+            // ------------------------
+            // STEP 2 — NÍVEL DE TREINO
+            // ------------------------
             case 2:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Qual é o seu nível de treino?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 163,
+                            lineNumber: 245,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -603,7 +677,7 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 166,
+                            lineNumber: 248,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -617,42 +691,37 @@ function QuizPage() {
                                             ...quizData,
                                             nivel_treino: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition
-              ${quizData.nivel_treino === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 182,
-                                        columnNumber: 19
-                                    }, this)
+                                    className: `w-full h-14 px-6 rounded-xl border-2 ${quizData.nivel_treino === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 170,
+                                    lineNumber: 252,
                                     columnNumber: 17
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 168,
+                            lineNumber: 250,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 162,
+                    lineNumber: 244,
                     columnNumber: 11
                 }, this);
+            // ------------------------
+            // STEP 3 — FREQUÊNCIA DE TREINO
+            // ------------------------
             case 3:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Quantas vezes você treina por semana?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 192,
+                            lineNumber: 276,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -660,7 +729,7 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 195,
+                            lineNumber: 279,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -676,42 +745,89 @@ function QuizPage() {
                                             ...quizData,
                                             frequencia_treino: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition
-              ${quizData.frequencia_treino === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 217,
-                                        columnNumber: 19
-                                    }, this)
+                                    className: `w-full h-14 px-6 rounded-xl border-2 ${quizData.frequencia_treino === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 205,
+                                    lineNumber: 289,
                                     columnNumber: 17
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 197,
+                            lineNumber: 281,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 191,
+                    lineNumber: 275,
                     columnNumber: 11
                 }, this);
+            // ------------------------
+            // STEP 4 — GÊNERO
+            // ------------------------
             case 4:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
+                            children: "Qual é o seu gênero?"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/quiz/page.tsx",
+                            lineNumber: 313,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            className: "text-[#6F6F6F]",
+                            children: "Escolha uma opção"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/quiz/page.tsx",
+                            lineNumber: 314,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "space-y-3",
+                            children: [
+                                "Masculino",
+                                "Feminino",
+                                "Outro"
+                            ].map((opt)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    onClick: ()=>setQuizData({
+                                            ...quizData,
+                                            genero: opt
+                                        }),
+                                    className: `w-full h-14 px-6 rounded-xl border-2 ${quizData.genero === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
+                                }, opt, false, {
+                                    fileName: "[project]/src/app/quiz/page.tsx",
+                                    lineNumber: 318,
+                                    columnNumber: 17
+                                }, this))
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/quiz/page.tsx",
+                            lineNumber: 316,
+                            columnNumber: 13
+                        }, this)
+                    ]
+                }, void 0, true, {
+                    fileName: "[project]/src/app/quiz/page.tsx",
+                    lineNumber: 312,
+                    columnNumber: 11
+                }, this);
+            // ------------------------
+            // STEP 5 — PESO ATUAL
+            // ------------------------
+            case 5:
+                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "space-y-10",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                            className: "text-2xl font-bold",
                             children: "Qual é o seu peso atual?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 226,
+                            lineNumber: 340,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -719,7 +835,7 @@ function QuizPage() {
                             children: "Ajuste usando o seletor abaixo"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 229,
+                            lineNumber: 341,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$scrollWhellPicker$2f$ScrollWhellPicker$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -729,36 +845,39 @@ function QuizPage() {
                             unit: "kg"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 231,
+                            lineNumber: 343,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                            className: "text-center text-4xl font-semibold",
+                            className: "text-4xl text-center font-semibold",
                             children: [
                                 pesoAtual,
                                 " kg"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 238,
+                            lineNumber: 350,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 225,
+                    lineNumber: 339,
                     columnNumber: 11
                 }, this);
-            case 5:
+            // ------------------------
+            // STEP 6 — ALTURA
+            // ------------------------
+            case 6:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Qual é a sua altura?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 245,
+                            lineNumber: 360,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -766,7 +885,7 @@ function QuizPage() {
                             children: "Ajuste usando o seletor abaixo"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 248,
+                            lineNumber: 361,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$scrollWhellPicker$2f$ScrollWhellPicker$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -776,36 +895,39 @@ function QuizPage() {
                             unit: "cm"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 250,
+                            lineNumber: 363,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                            className: "text-center text-4xl font-semibold",
+                            className: "text-4xl text-center font-semibold",
                             children: [
                                 altura,
                                 " cm"
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 257,
+                            lineNumber: 370,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 244,
+                    lineNumber: 359,
                     columnNumber: 11
                 }, this);
-            case 6:
+            // ------------------------
+            // STEP 7 — PESO DESEJADO
+            // ------------------------
+            case 7:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Qual peso você deseja atingir?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 264,
+                            lineNumber: 380,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -813,7 +935,7 @@ function QuizPage() {
                             children: "Ajuste usando o seletor abaixo"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 267,
+                            lineNumber: 383,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$scrollWhellPicker$2f$ScrollWhellPicker$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -823,7 +945,7 @@ function QuizPage() {
                             unit: "kg"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 269,
+                            lineNumber: 385,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -837,11 +959,11 @@ function QuizPage() {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 277,
+                                    lineNumber: 393,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                    className: "text-red-500 mt-2",
+                                    className: "mt-2 text-red-500",
                                     children: [
                                         pesoDesejado - pesoAtual >= 0 ? "+" : "",
                                         pesoDesejado - pesoAtual,
@@ -849,31 +971,34 @@ function QuizPage() {
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 278,
+                                    lineNumber: 394,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 276,
+                            lineNumber: 392,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 263,
+                    lineNumber: 379,
                     columnNumber: 11
                 }, this);
-            case 7:
+            // ------------------------
+            // STEP 8 — DATA DE NASCIMENTO
+            // ------------------------
+            case 8:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "space-y-8",
+                    className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Quando você nasceu?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 289,
+                            lineNumber: 408,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -881,21 +1006,21 @@ function QuizPage() {
                             children: "Isso será usado para calibrar seu plano personalizado"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 292,
+                            lineNumber: 409,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex justify-center gap-10",
+                            className: "flex justify-center gap-8",
                             children: [
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "flex flex-col items-center",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "text-sm text-[#6F6F6F] mb-2 font-bold",
+                                            className: "mb-2 text-sm text-[#6F6F6F] font-bold",
                                             children: "Dia"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/quiz/page.tsx",
-                                            lineNumber: 298,
+                                            lineNumber: 415,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$scrollWhellPicker$2f$ScrollWheelDatePicker$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -904,24 +1029,24 @@ function QuizPage() {
                                             options: dias
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/quiz/page.tsx",
-                                            lineNumber: 301,
+                                            lineNumber: 418,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 297,
+                                    lineNumber: 414,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "flex flex-col items-center",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "text-sm text-[#6F6F6F] mb-2 font-bold",
+                                            className: "mb-2 text-sm text-[#6F6F6F] font-bold",
                                             children: "Mês"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/quiz/page.tsx",
-                                            lineNumber: 309,
+                                            lineNumber: 426,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$scrollWhellPicker$2f$ScrollWheelDatePicker$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -930,24 +1055,24 @@ function QuizPage() {
                                             options: meses
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/quiz/page.tsx",
-                                            lineNumber: 312,
+                                            lineNumber: 429,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 308,
+                                    lineNumber: 425,
                                     columnNumber: 15
                                 }, this),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                     className: "flex flex-col items-center",
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "text-sm text-[#6F6F6F] mb-2 font-bold",
+                                            className: "mb-2 text-sm text-[#6F6F6F] font-bold",
                                             children: "Ano"
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/quiz/page.tsx",
-                                            lineNumber: 320,
+                                            lineNumber: 437,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$scrollWhellPicker$2f$ScrollWheelDatePicker$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
@@ -956,37 +1081,40 @@ function QuizPage() {
                                             options: anos
                                         }, void 0, false, {
                                             fileName: "[project]/src/app/quiz/page.tsx",
-                                            lineNumber: 323,
+                                            lineNumber: 440,
                                             columnNumber: 17
                                         }, this)
                                     ]
                                 }, void 0, true, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 319,
+                                    lineNumber: 436,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 296,
+                            lineNumber: 413,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 288,
+                    lineNumber: 407,
                     columnNumber: 11
                 }, this);
-            case 8:
+            // ------------------------
+            // STEP 9 — HORÁRIO TREINO
+            // ------------------------
+            case 9:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Quando você treina?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 335,
+                            lineNumber: 456,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -994,7 +1122,7 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 338,
+                            lineNumber: 457,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1010,41 +1138,37 @@ function QuizPage() {
                                             ...quizData,
                                             horario_treino: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.horario_treino === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 354,
-                                        columnNumber: 21
-                                    }, this)
+                                    className: `w-full h-14 rounded-xl border-2 ${quizData.horario_treino === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 343,
+                                    lineNumber: 462,
                                     columnNumber: 19
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 340,
+                            lineNumber: 459,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 334,
+                    lineNumber: 455,
                     columnNumber: 11
                 }, this);
-            case 9:
+            // ------------------------
+            // STEP 10 — ALIMENTAÇÃO
+            // ------------------------
+            case 10:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Como você se alimenta atualmente?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 365,
+                            lineNumber: 487,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1052,14 +1176,14 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 368,
+                            lineNumber: 490,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "space-y-3",
                             children: [
                                 "Muito mal",
-                                "Ruim",
+                                "Mal",
                                 "Mediana",
                                 "Boa",
                                 "Muito boa"
@@ -1068,41 +1192,37 @@ function QuizPage() {
                                             ...quizData,
                                             alimentacao_atual: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.alimentacao_atual === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 384,
-                                        columnNumber: 21
-                                    }, this)
+                                    className: `w-full h-14 rounded-xl border-2 ${quizData.alimentacao_atual === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 373,
+                                    lineNumber: 495,
                                     columnNumber: 19
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 370,
+                            lineNumber: 492,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 364,
+                    lineNumber: 486,
                     columnNumber: 11
                 }, this);
-            case 10:
+            // ------------------------
+            // STEP 11 — REFEIÇÕES DIA
+            // ------------------------
+            case 11:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Quantas refeições faz por dia?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 395,
+                            lineNumber: 520,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1110,7 +1230,7 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 398,
+                            lineNumber: 523,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1125,49 +1245,45 @@ function QuizPage() {
                                             ...quizData,
                                             refeicoes_dia: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.refeicoes_dia === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 413,
-                                        columnNumber: 19
-                                    }, this)
+                                    className: `w-full h-14 rounded-xl border-2 ${quizData.refeicoes_dia === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 402,
+                                    lineNumber: 527,
                                     columnNumber: 17
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 400,
+                            lineNumber: 525,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 394,
+                    lineNumber: 519,
                     columnNumber: 11
                 }, this);
-            case 11:
+            // ------------------------
+            // STEP 12 — ROTINA
+            // ------------------------
+            case 12:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Como é sua rotina de trabalho/estudo?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 423,
+                            lineNumber: 551,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                             className: "text-[#6F6F6F]",
-                            children: "Você pode escolher mais de uma opção"
+                            children: "Pode escolher mais de uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 426,
+                            lineNumber: 554,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1181,10 +1297,9 @@ function QuizPage() {
                                 "Bastante tempo livre"
                             ].map((opt)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     onClick: ()=>{
-                                        const curr = quizData.rotina_trabalho;
-                                        const exists = curr.includes(opt);
-                                        const updated = exists ? curr.filter((o)=>o !== opt) : [
-                                            ...curr,
+                                        const exists = quizData.rotina_trabalho.includes(opt);
+                                        const updated = exists ? quizData.rotina_trabalho.filter((o)=>o !== opt) : [
+                                            ...quizData.rotina_trabalho,
                                             opt
                                         ];
                                         setQuizData({
@@ -1192,41 +1307,37 @@ function QuizPage() {
                                             rotina_trabalho: updated
                                         });
                                     },
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.rotina_trabalho.includes(opt) ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 456,
-                                        columnNumber: 19
-                                    }, this)
+                                    className: `w-full h-14 rounded-xl border-2 ${quizData.rotina_trabalho.includes(opt) ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 439,
+                                    lineNumber: 565,
                                     columnNumber: 17
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 430,
+                            lineNumber: 556,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 422,
+                    lineNumber: 550,
                     columnNumber: 11
                 }, this);
-            case 12:
+            // ------------------------
+            // STEP 13 — DISCIPLINA
+            // ------------------------
+            case 13:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Nível de disciplina atual"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 466,
+                            lineNumber: 594,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1234,7 +1345,7 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 469,
+                            lineNumber: 595,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1250,49 +1361,45 @@ function QuizPage() {
                                             ...quizData,
                                             nivel_disciplina: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.nivel_disciplina === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 485,
-                                        columnNumber: 21
-                                    }, this)
+                                    className: `w-full h-14 rounded-xl border-2 ${quizData.nivel_disciplina === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 474,
+                                    lineNumber: 600,
                                     columnNumber: 19
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 471,
+                            lineNumber: 597,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 465,
+                    lineNumber: 593,
                     columnNumber: 11
                 }, this);
-            case 13:
+            // ------------------------
+            // STEP 14 — DIFICULDADE PRINCIPAL
+            // ------------------------
+            case 14:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Dificuldade principal"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 496,
+                            lineNumber: 625,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                             className: "text-[#6F6F6F]",
-                            children: "Você pode escolher mais de uma opção"
+                            children: "Pode escolher mais de uma"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 499,
+                            lineNumber: 626,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1305,10 +1412,9 @@ function QuizPage() {
                                 "Falta de tempo"
                             ].map((opt)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                     onClick: ()=>{
-                                        const curr = quizData.dificuldade_principal;
-                                        const exists = curr.includes(opt);
-                                        const updated = exists ? curr.filter((o)=>o !== opt) : [
-                                            ...curr,
+                                        const exists = quizData.dificuldade_principal.includes(opt);
+                                        const updated = exists ? quizData.dificuldade_principal.filter((o)=>o !== opt) : [
+                                            ...quizData.dificuldade_principal,
                                             opt
                                         ];
                                         setQuizData({
@@ -1316,41 +1422,37 @@ function QuizPage() {
                                             dificuldade_principal: updated
                                         });
                                     },
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.dificuldade_principal.includes(opt) ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 531,
-                                        columnNumber: 19
-                                    }, this)
+                                    className: `w-full h-14 rounded-xl border-2 ${quizData.dificuldade_principal.includes(opt) ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 511,
+                                    lineNumber: 636,
                                     columnNumber: 17
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 503,
+                            lineNumber: 628,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 495,
+                    lineNumber: 624,
                     columnNumber: 11
                 }, this);
-            case 14:
+            // ------------------------
+            // STEP 15 — HORÁRIO DIFÍCIL
+            // ------------------------
+            case 15:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Qual é o seu horário mais difícil do dia?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 541,
+                            lineNumber: 668,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1358,7 +1460,7 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 544,
+                            lineNumber: 671,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1373,41 +1475,37 @@ function QuizPage() {
                                             ...quizData,
                                             horario_dificil: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.horario_dificil === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 559,
-                                        columnNumber: 19
-                                    }, this)
+                                    className: `w-full h-14 rounded-xl border-2 ${quizData.horario_dificil === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 548,
+                                    lineNumber: 675,
                                     columnNumber: 17
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 546,
+                            lineNumber: 673,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 540,
+                    lineNumber: 667,
                     columnNumber: 11
                 }, this);
-            case 15:
+            // ------------------------
+            // STEP 16 — ÁGUA
+            // ------------------------
+            case 16:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Bebe água regularmente?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 569,
+                            lineNumber: 699,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1415,7 +1513,7 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 572,
+                            lineNumber: 700,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1431,41 +1529,37 @@ function QuizPage() {
                                             ...quizData,
                                             agua: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.agua === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 591,
-                                        columnNumber: 19
-                                    }, this)
+                                    className: `w-full h-14 rounded-xl border-2 ${quizData.agua === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 582,
+                                    lineNumber: 710,
                                     columnNumber: 17
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 574,
+                            lineNumber: 702,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 568,
+                    lineNumber: 698,
                     columnNumber: 11
                 }, this);
-            case 16:
+            // ------------------------
+            // STEP 17 — SONO
+            // ------------------------
+            case 17:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Como está seu sono?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 601,
+                            lineNumber: 732,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1473,7 +1567,7 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 604,
+                            lineNumber: 733,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1489,41 +1583,37 @@ function QuizPage() {
                                             ...quizData,
                                             sono: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.sono === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 618,
-                                        columnNumber: 21
-                                    }, this)
+                                    className: `w-full h-14 rounded-xl border-2 ${quizData.sono === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 609,
+                                    lineNumber: 738,
                                     columnNumber: 19
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 606,
+                            lineNumber: 735,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 600,
+                    lineNumber: 731,
                     columnNumber: 11
                 }, this);
-            case 17:
+            // ------------------------
+            // STEP 18 — TENTOU DIETA
+            // ------------------------
+            case 18:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Já tentou seguir dieta antes?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 629,
+                            lineNumber: 761,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1531,7 +1621,7 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 632,
+                            lineNumber: 764,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1546,41 +1636,37 @@ function QuizPage() {
                                             ...quizData,
                                             tentou_dieta: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.tentou_dieta === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 652,
-                                        columnNumber: 19
-                                    }, this)
+                                    className: `w-full h-14 rounded-xl border-2 ${quizData.tentou_dieta === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 641,
+                                    lineNumber: 773,
                                     columnNumber: 17
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 634,
+                            lineNumber: 766,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 628,
+                    lineNumber: 760,
                     columnNumber: 11
                 }, this);
-            case 18:
+            // ------------------------
+            // STEP 19 — EXPECTATIVA
+            // ------------------------
+            case 19:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "O que você espera do app?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 662,
+                            lineNumber: 797,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1588,7 +1674,7 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 665,
+                            lineNumber: 798,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1604,41 +1690,37 @@ function QuizPage() {
                                             ...quizData,
                                             expectativa: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.expectativa === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 684,
-                                        columnNumber: 19
-                                    }, this)
+                                    className: `w-full h-14 rounded-xl border-2 ${quizData.expectativa === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 675,
+                                    lineNumber: 808,
                                     columnNumber: 17
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 667,
+                            lineNumber: 800,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 661,
+                    lineNumber: 796,
                     columnNumber: 11
                 }, this);
-            case 19:
+            // ------------------------
+            // STEP 20 — PRAZO
+            // ------------------------
+            case 20:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Em quanto tempo quer ver resultados?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 694,
+                            lineNumber: 830,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1646,7 +1728,7 @@ function QuizPage() {
                             children: "Escolha uma opção"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 697,
+                            lineNumber: 833,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1662,41 +1744,37 @@ function QuizPage() {
                                             ...quizData,
                                             prazo_resultado: opt
                                         }),
-                                    className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.prazo_resultado === opt ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                        className: "font-medium text-[#0A0A0A]",
-                                        children: opt
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 718,
-                                        columnNumber: 19
-                                    }, this)
+                                    className: `w-full h-14 rounded-xl border-2 ${quizData.prazo_resultado === opt ? "border-[#00C974]" : "border-gray-200"}`,
+                                    children: opt
                                 }, opt, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 707,
+                                    lineNumber: 843,
                                     columnNumber: 17
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 699,
+                            lineNumber: 835,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 693,
+                    lineNumber: 829,
                     columnNumber: 11
                 }, this);
-            case 20:
+            // ------------------------
+            // STEP 21 — ALERGIAS
+            // ------------------------
+            case 21:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                     className: "space-y-10",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
+                            className: "text-2xl font-bold",
                             children: "Você possui alguma alergia ou intolerância?"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 728,
+                            lineNumber: 867,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -1704,7 +1782,7 @@ function QuizPage() {
                             children: "Selecione quantas forem necessárias"
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 731,
+                            lineNumber: 870,
                             columnNumber: 13
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1716,12 +1794,13 @@ function QuizPage() {
                                     "Frutos do mar",
                                     "Ovos",
                                     "Amendoim",
-                                    "Corantes/conservantes"
+                                    "Corantes/conservantes",
+                                    "Nenhuma alergia/intolerância"
                                 ].map((opt)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         onClick: ()=>{
-                                            const curr = quizData.alergias;
-                                            const updated = curr.includes(opt) ? curr.filter((o)=>o !== opt) : [
-                                                ...curr,
+                                            const exists = quizData.alergias.includes(opt);
+                                            const updated = exists ? quizData.alergias.filter((o)=>o !== opt) : [
+                                                ...quizData.alergias,
                                                 opt
                                             ];
                                             setQuizData({
@@ -1729,18 +1808,11 @@ function QuizPage() {
                                                 alergias: updated
                                             });
                                         },
-                                        className: `w-full h-14 px-6 flex items-center justify-between rounded-xl border-2 transition ${quizData.alergias.includes(opt) ? "border-[#00C974] bg-white" : "border-gray-200 bg-white"}`,
-                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                            className: "font-medium text-[#0A0A0A]",
-                                            children: opt
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/app/quiz/page.tsx",
-                                            lineNumber: 760,
-                                            columnNumber: 19
-                                        }, this)
+                                        className: `w-full h-14 rounded-xl border-2 ${quizData.alergias.includes(opt) ? "border-[#00C974]" : "border-gray-200"}`,
+                                        children: opt
                                     }, opt, false, {
                                         fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 744,
+                                        lineNumber: 884,
                                         columnNumber: 17
                                     }, this)),
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$input$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Input"], {
@@ -1753,101 +1825,32 @@ function QuizPage() {
                                     className: "w-full h-14 px-4 rounded-xl border-2 border-gray-200"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 764,
+                                    lineNumber: 904,
                                     columnNumber: 15
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 735,
+                            lineNumber: 874,
                             columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 727,
-                    columnNumber: 11
-                }, this);
-            case 21:
-                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "space-y-10",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-2xl font-bold text-[#0A0A0A]",
-                            children: "Antes de finalizar..."
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 779,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                            className: "text-[#6F6F6F]",
-                            children: "Revise suas respostas na próxima etapa."
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 782,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "text-[#00C974] font-semibold text-lg text-center mt-6",
-                            children: "Continue para finalizar o questionário."
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 786,
-                            columnNumber: 13
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 778,
-                    columnNumber: 11
-                }, this);
-            case 22:
-                return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "space-y-10",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                            className: "text-3xl font-bold text-[#0A0A0A]",
-                            children: "Tudo pronto!"
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 795,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                            className: "text-[#6F6F6F]",
-                            children: "Clique em finalizar para avançar."
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 796,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "text-center text-6xl",
-                            children: "🎉"
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 798,
-                            columnNumber: 13
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 794,
+                    lineNumber: 866,
                     columnNumber: 11
                 }, this);
             default:
                 return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                    className: "text-xl font-bold",
                     children: [
                         "Passo ",
                         step,
-                        " não configurado ainda (mas seu quiz continua funcionando)"
+                        " não configurado."
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 804,
-                    columnNumber: 11
+                    lineNumber: 920,
+                    columnNumber: 16
                 }, this);
         }
     };
@@ -1860,40 +1863,26 @@ function QuizPage() {
                     className: "mb-8",
                     children: [
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex items-center justify-between",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
-                                    onClick: handleBack,
-                                    variant: "ghost",
-                                    className: "p-2",
-                                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$left$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronLeft$3e$__["ChevronLeft"], {
-                                        className: "w-6 h-6"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/app/quiz/page.tsx",
-                                        lineNumber: 819,
-                                        columnNumber: 15
-                                    }, this)
+                            className: "flex justify-start items-center",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$ui$2f$button$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["Button"], {
+                                onClick: handleBack,
+                                variant: "ghost",
+                                className: "p-2",
+                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$left$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronLeft$3e$__["ChevronLeft"], {
+                                    className: "w-6 h-6"
                                 }, void 0, false, {
                                     fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 818,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    className: "text-sm text-gray-600",
-                                    children: [
-                                        step,
-                                        " de ",
-                                        totalSteps
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/src/app/quiz/page.tsx",
-                                    lineNumber: 821,
-                                    columnNumber: 13
+                                    lineNumber: 930,
+                                    columnNumber: 15
                                 }, this)
-                            ]
-                        }, void 0, true, {
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/quiz/page.tsx",
+                                lineNumber: 929,
+                                columnNumber: 13
+                            }, this)
+                        }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 817,
+                            lineNumber: 928,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -1905,18 +1894,18 @@ function QuizPage() {
                                 }
                             }, void 0, false, {
                                 fileName: "[project]/src/app/quiz/page.tsx",
-                                lineNumber: 827,
+                                lineNumber: 935,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/app/quiz/page.tsx",
-                            lineNumber: 826,
+                            lineNumber: 934,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 816,
+                    lineNumber: 927,
                     columnNumber: 9
                 }, this),
                 renderQuestion(),
@@ -1926,18 +1915,18 @@ function QuizPage() {
                     children: step === totalSteps ? "Finalizar" : "Continuar"
                 }, void 0, false, {
                     fileName: "[project]/src/app/quiz/page.tsx",
-                    lineNumber: 836,
+                    lineNumber: 946,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/app/quiz/page.tsx",
-            lineNumber: 814,
+            lineNumber: 925,
             columnNumber: 7
         }, this)
     }, void 0, false, {
         fileName: "[project]/src/app/quiz/page.tsx",
-        lineNumber: 813,
+        lineNumber: 924,
         columnNumber: 5
     }, this);
 }
